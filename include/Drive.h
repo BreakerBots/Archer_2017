@@ -50,7 +50,7 @@ private:
 
 public:
 
-	Drive (std::shared_ptr<ITable> nt);
+	Drive ();
 
 	void Init (std::shared_ptr<ITable> nt);
 	void Update (const Joystick& xbox);

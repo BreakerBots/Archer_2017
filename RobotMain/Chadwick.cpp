@@ -32,8 +32,8 @@ public:
 	Chadwick():
 		xbox(0),
 
-		aiming(pixy),
-		drive(subsystems),
+		aiming(),
+		drive(),
 		gearPlacer(0,0,0,&aiming,&drive),
 
 		wings(),
@@ -70,8 +70,10 @@ private:
 	void TeleopInit(){
 		//Called once at the start of each operator period
 		printf("TELEOP Initialized\n");
+
 		aiming.Init(pixy);
 		drive.Init(subsystems->GetSubTable("Drive"));
+		wings.Init(subsystems->GetSubTable("Wings"));
 
 		SmartDashboard::PutBoolean("DB/LED 0",true);
 		SmartDashboard::PutBoolean("DB/LED 1",true);
@@ -110,13 +112,12 @@ private:
 
 		//-------------Winch----------------//
 
+		static Deadband ryDeadband(0.1);
 		float ryVal = 0;
 		if (winchButton.State()){
 			winch.Set(winchEffort);
 		} else {
-			float deadBand = 0.1;
-			ryVal = xbox.GetRawAxis(XBox::RY);
-			if (ryVal > -deadBand && ryVal < deadBand) ryVal = 0;
+			ryVal = ryDeadband.OutputFor(xbox.GetRawAxis(XBox::RY));
 			winch.Set(ryVal);
 			SmartDashboard::PutNumber("Winch RY: ",ryVal);
 		}

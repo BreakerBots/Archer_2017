@@ -19,7 +19,7 @@
 #include "WPILib.h"
 #include "Talons.h"
 
-Drive::Drive (std::shared_ptr<ITable> nt):
+Drive::Drive ():
 	highGear(false),
 
 	right1(Talons::R1),
@@ -38,8 +38,6 @@ Drive::Drive (std::shared_ptr<ITable> nt):
 	teleop(true),
 	autoAdjustmentValue(0)
 {
-	driveTable = nt;
-
 	rightGear = new DoubleSolenoid(50,2,3);
 	leftGear = new DoubleSolenoid(50,0,1);
 
@@ -54,18 +52,6 @@ Drive::Drive (std::shared_ptr<ITable> nt):
 	left3.SetControlMode(CANTalon::kFollower);
 	left3.Set(Talons::L1);
 
-	//Hopefully won't have to do this:
-/*
-	 right1.SetSafetyEnabled(false);
-	 right2.SetSafetyEnabled(false);
-	 right3.SetSafetyEnabled(false);
-
-	 left1.SetSafetyEnabled(false);
-	 left2.SetSafetyEnabled(false);
-	 left3.SetSafetyEnabled(false);
-
-	 drive.SetSafetyEnabled(false);
-	 */
 }//Basic Constructor
 
 void Drive::Init (std::shared_ptr<ITable> nt){

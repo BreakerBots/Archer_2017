@@ -33,6 +33,10 @@ Wings::Wings (int triggerNum):
 	button = ToggleButton(triggerNum);
 }//Wings constructor
 
+void Wings::Init(std::shared_ptr<ITable> nt){
+	wingsTable = nt;
+}
+
 void Wings::Update(const Joystick& xbox){
 	button.Update(xbox);
 
@@ -43,6 +47,7 @@ void Wings::Update(const Joystick& xbox){
 		leftWing->Set(DoubleSolenoid::kReverse);
 		rightWing->Set(DoubleSolenoid::kReverse);
 	}
+	PostValues();
 }//Update Method
 
 void Wings::SetLeftForward(bool newLeftForward){
@@ -74,4 +79,12 @@ void Wings::Close(){
 bool Wings::AreClosed(){
 	return button.State();
 }
+
+void Wings::PostValues(){
+	wingsTable->PutNumber("PCM_ID",PCM_ID);
+
+	wingsTable->PutString("State",(button.State()?"OPEN":"CLOSED"));
+	wingsTable->PutNumber("Debug/LeftWing",leftWing->Get());
+	wingsTable->PutNumber("Debug/RightWing",rightWing->Get());
+}//PostValues method
 

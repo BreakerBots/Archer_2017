@@ -23,7 +23,7 @@ public:
 
 	float error;
 
-	BreakerVision (std::shared_ptr<NetworkTable> nt);
+	BreakerVision ();
 	void Init(std::shared_ptr<NetworkTable> table);
 
 	void Update();
@@ -35,9 +35,6 @@ public:
 
 private:
 
-	//Todo: Implement a try/catch pattern for reading Network tables...does
-	//      a Network Table throw if you try to read a value not in the table?
-	//		if not, then test for defaults before taking any further actions.
 	//Relies upon the following data being available on the Network Table
 	//	Frame
 	//	NumOfObjects

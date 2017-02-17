@@ -11,12 +11,10 @@
 	//Todo: don't put magic constants in the class declaration.
 	//Make them defaults that have set/get methods.
 
-BreakerVision::BreakerVision (std::shared_ptr<NetworkTable> nt){
+BreakerVision::BreakerVision (){
 		//Midpoint of the pixy cam's viewing window
 	center_x = 160;
 	center_y = 100;
-		//NetworkTable to which the pixy cam posts its values
-	pixyTable = nt;
 		//If objects are spotted by the pixy cam, track those objects
 	trackObject = false;
 		//# of objects to track targetX becomes the average
@@ -48,15 +46,16 @@ double BreakerVision::PIDGet(){
 	return error;
 }//PIDGet method (from PIDSource)
 
-//Todo: Implement a try/catch pattern for reading Network tables...does
-//      a Network Table throw if you try to read a value not in the table?
-//		if not, then test for defaults before taking any further actions.
 //Relies upon the following data being available on the Network Table
 //	Frame
 //	NumOfObjects
 //	ObjectN for [0:N] objects
 void BreakerVision::ScanForObjects(){
-//	int frame = pixyTable->GetNumber("Frame",-1);
+	if (!pixyTable->ContainsKey("NumOfObjects")){
+		error = 0;
+		return;
+	}
+
 	int trackedObjectCount = pixyTable->GetNumber("NumOfObjects",0);
 
 	if (trackedObjectCount > 0){
@@ -66,11 +65,21 @@ void BreakerVision::ScanForObjects(){
 		int count = 0;
 
 		for (int i=0; i<std::min(tapeCount,trackedObjectCount); i++){
+			if (pixyTable->ContainsKey("Object"+std::to_string(i))){
+				printf("ERROR: BreakerVision: Object%d not found in Network Table\n",i);
+				continue;
+			}
 			std::vector<double> object = pixyTable->GetNumberArray("Object"+std::to_string(i),std::vector<double>());
 			x_sum += object[1];
 			count++;
 		}
 
+		if (count == 0){
+			printf("ERROR: BreakerVision: Insufficient # of objects posted to Network Table\n");
+			error = 0;
+			trackObject = false;
+			return;
+		}
 		objX = x_sum/count;
 
 		error = center_x-objX;
@@ -83,6 +92,4 @@ void BreakerVision::ScanForObjects(){
 	pixyTable->PutNumber("Error",error);
 
 }//ScanForObjects method
-
-
 
