@@ -21,6 +21,7 @@ private:
 	BreakerVision aiming;
 	Drive drive;
 	PIDController gearPlacer;
+	float real_m_I;
 
 	Wings wings;
 
@@ -35,6 +36,7 @@ public:
 		aiming(),
 		drive(),
 		gearPlacer(0,0,0,&aiming,&drive),
+		real_m_I(0),
 
 		wings(),
 
@@ -43,12 +45,10 @@ public:
 		winchButton(XBox::RB)
 
 	{
-
 		//----------Initializations---------------//
 
 		pixy = NetworkTable::GetTable("Pixy");
 		subsystems = NetworkTable::GetTable("Subsystems");
-
 
 	}//Robot Constructor
 
@@ -105,6 +105,11 @@ private:
 		//PIDController gearPlacer will automatically read error from aiming,
 		//calculate controlEffort, and output that value to the drive system.
 		gearPlacer.SetPID(SmartDashboard::GetNumber("DB/Slider 0",0),SmartDashboard::GetNumber("DB/Slider 1",0),0);
+
+		if (xbox.GetRawButton(XBox::BACK)){
+			gearPlacer.m_totalError = 0;
+		}
+		gearPlacer.m_totalError = 0;
 
 		//-----------Gear Wings-----------//
 
