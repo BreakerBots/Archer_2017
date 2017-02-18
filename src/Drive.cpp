@@ -18,9 +18,10 @@
 
 #include "WPILib.h"
 #include "Talons.h"
+#include "XBox.h"
 
 Drive::Drive ():
-	highGear(false),
+	gearButton(XBox::B),
 
 	right1(Talons::R1),
 	right2(Talons::R2),
@@ -31,6 +32,8 @@ Drive::Drive ():
 	left3(Talons::L3),
 
 	drive (left1, right1),
+
+	directionButton(XBox::A),
 
 	moveDeadband(0.1),
 	turnDeadband(0.2),
@@ -64,24 +67,25 @@ void Drive::Update (const Joystick& xbox){
 	else
 		teleop = true;
 
+	//Check Direction Button
+	directionButton.Update(xbox);
+
+	//1 == Forward -1==Reverse
+	int reverse = (directionButton.State()?1:-1);
+
 	//Driving Commands
 	if (teleop){
-		drive.ArcadeDrive(moveDeadband.OutputFor(xbox.GetRawAxis(XBox::LY)),
+		drive.ArcadeDrive(reverse*moveDeadband.OutputFor(xbox.GetRawAxis(XBox::LY)),
 						turnDeadband.OutputFor(xbox.GetRawAxis(XBox::LX)));
 	} else {
-		drive.ArcadeDrive(moveDeadband.OutputFor(xbox.GetRawAxis(XBox::LY)),
+		drive.ArcadeDrive(reverse*moveDeadband.OutputFor(xbox.GetRawAxis(XBox::LY)),
 						autoAdjustmentValue, true);
 	}
 
 	//------------GEARS----------//
-	if (xbox.GetRawButton(XBox::B)) {
-		highGear = false;
-	}
-	if (xbox.GetRawButton(XBox::A)) {
-		highGear = true;
-	}
+	gearButton.Update(xbox);
 
-	if (highGear){
+	if (gearButton.State()){
 		leftGear->Set(DoubleSolenoid::kForward);
 		rightGear->Set(DoubleSolenoid::kForward);
 	} else {
@@ -100,10 +104,26 @@ void Drive::ForceTeleop(){
 }
 
 bool Drive::Highgear(){
-	return highGear;
+	return gearButton.State();
 }
 void Drive::ChangeGears(bool newGearState){
-	highGear = newGearState;
+	gearButton.Override(newGearState);
+}
+
+bool Drive::FacingForward(){
+	return directionButton.State();
+}
+bool Drive::FacingBackward(){
+	return !directionButton.State();
+}
+void Drive::FaceForward(){
+	directionButton.Override(true);
+}
+void Drive::FaceBackward(){
+	directionButton.Override(false);
+}
+void Drive::FaceForward(bool newDirection){
+	directionButton.Override(newDirection);
 }
 
 void Drive::PIDWrite (double output){
@@ -114,7 +134,8 @@ void Drive::PostValues (){
 	//Post Values to the SmartDashboard/Subsystems/Drive network table
 
 	driveTable->PutString("Control Mode",(teleop?"TELE-OP":"AUTONOMOUS"));
-	driveTable->PutString("Gear",(highGear?"HIGH GEAR":"LOW GEAR"));
+	driveTable->PutString("Gear",(gearButton.State()?"HIGH GEAR":"LOW GEAR"));
+	driveTable->PutString("Direction",(directionButton.State()?"FORWARD":"REVERSE"));
 	driveTable->PutNumber("AutoAdjust",autoAdjustmentValue);
 
 	//Debug Values: Troubleshoot discrepancy with above values
