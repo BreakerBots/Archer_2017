@@ -13,6 +13,7 @@
 
 #include "Talons.h"
 #include "Deadband.h"
+#include "ToggleButton.h"
 
 class Drive : public PIDOutput
 {
@@ -24,6 +25,7 @@ private:
 		//Solenoids allow shifts between high and low gears
 	DoubleSolenoid* leftGear;
 	DoubleSolenoid* rightGear;
+//	ToggleButton gearButton;
 	bool highGear;
 
 		//3-talon drive for the right side

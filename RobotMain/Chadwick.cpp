@@ -21,7 +21,7 @@ private:
 	BreakerVision aiming;
 	Drive drive;
 	PIDController gearPlacer;
-	float real_m_I;
+	float gearPlacerIZone;
 
 	Wings wings;
 
@@ -36,7 +36,7 @@ public:
 		aiming(),
 		drive(),
 		gearPlacer(0,0,0,&aiming,&drive),
-		real_m_I(0),
+		gearPlacerIZone(50),
 
 		wings(),
 
@@ -109,7 +109,9 @@ private:
 		if (xbox.GetRawButton(XBox::BACK)){
 			gearPlacer.m_totalError = 0;
 		}
-		gearPlacer.m_totalError = 0;
+		if (gearPlacer.GetError() >= gearPlacerIZone){
+			gearPlacer.m_totalError = 0;
+		}
 
 		//-----------Gear Wings-----------//
 
