@@ -28,10 +28,12 @@ private:
 	ToggleButton gearButton;
 
 		//3-talon drive for the right side
+	float rightPos;
 	CANTalon right1;
 	CANTalon right2;
 	CANTalon right3;
 		//3-talon drive for the left side
+	float leftPos;
 	CANTalon left1;
 	CANTalon left2;
 	CANTalon left3;

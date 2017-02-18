@@ -23,10 +23,12 @@
 Drive::Drive ():
 	gearButton(XBox::B),
 
+	rightPos(0),
 	right1(Talons::R1),
 	right2(Talons::R2),
 	right3(Talons::R3),
 
+	leftPos(0),
 	left1(Talons::L1),
 	left2(Talons::L2),
 	left3(Talons::L3),
@@ -36,7 +38,7 @@ Drive::Drive ():
 	directionButton(XBox::A),
 
 	moveDeadband(0.1),
-	turnDeadband(0.2),
+	turnDeadband(0.1),
 
 	teleop(true),
 	autoAdjustmentValue(0)
@@ -44,7 +46,22 @@ Drive::Drive ():
 	rightGear = new DoubleSolenoid(50,2,3);
 	leftGear = new DoubleSolenoid(50,0,1);
 
-	//----------Talon Management-----------//
+	//----------Track the Leaders-----------//
+	right1.SetControlMode(CANTalon::ControlMode::kPosition);
+	right1.SetFeedbackDevice(CANTalon::QuadEncoder);
+	right1.SetEncPosition(0);
+	right1.SetP(0);
+	right1.SetI(0);
+	right1.SetD(0);
+
+	left1.SetControlMode(CANTalon::ControlMode::kPosition);
+	left1.SetFeedbackDevice(CANTalon::QuadEncoder);
+	left1.SetEncPosition(0);
+	left1.SetP(0);
+	left1.SetI(0);
+	left1.SetD(0);
+
+	//----------Enslave the rest------------//
 	right2.SetControlMode(CANTalon::kFollower);
 	right2.Set(Talons::R1);
 	right3.SetControlMode(CANTalon::kFollower);
@@ -71,16 +88,21 @@ void Drive::Update (const Joystick& xbox){
 	directionButton.Update(xbox);
 
 	//1 == Forward -1==Reverse
-	int reverse = (directionButton.State()?1:-1);
+//	int reverse = (directionButton.State()?1:-1);
 
 	//Driving Commands
-	if (teleop){
-		drive.ArcadeDrive(reverse*moveDeadband.OutputFor(xbox.GetRawAxis(XBox::LY)),
-						turnDeadband.OutputFor(xbox.GetRawAxis(XBox::LX)));
-	} else {
-		drive.ArcadeDrive(reverse*moveDeadband.OutputFor(xbox.GetRawAxis(XBox::LY)),
-						autoAdjustmentValue, true);
-	}
+//	if (teleop){
+//		drive.ArcadeDrive(reverse*moveDeadband.OutputFor(xbox.GetRawAxis(XBox::LY)),
+//						turnDeadband.OutputFor(xbox.GetRawAxis(XBox::LX)));
+//	} else {
+//		drive.ArcadeDrive(reverse*moveDeadband.OutputFor(xbox.GetRawAxis(XBox::LY)),
+//						autoAdjustmentValue, true);
+//	}
+	rightPos += moveDeadband.OutputFor(xbox.GetRawAxis(XBox::RY));
+	leftPos  += turnDeadband.OutputFor(xbox.GetRawAxis(XBox::LY));
+
+	right1.Set(rightPos);
+	left1.Set(leftPos);
 
 	//------------GEARS----------//
 	gearButton.Update(xbox);
@@ -141,6 +163,8 @@ void Drive::PostValues (){
 	//Debug Values: Troubleshoot discrepancy with above values
 	driveTable->PutNumber("Debug/LeftEffort",left1.Get());
 	driveTable->PutNumber("Debug/RightEffort",right1.Get());
+	driveTable->PutNumber("Debug/LeftPos",leftPos);
+	driveTable->PutNumber("Debug/RightPos",rightPos);
 
 	driveTable->PutNumber("Debug/LeftGear",leftGear->Get());
 	driveTable->PutNumber("Debug/RightGear",rightGear->Get());

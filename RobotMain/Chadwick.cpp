@@ -121,6 +121,11 @@ private:
 
 		//-------------Winch----------------//
 
+		//WINCH DISABLED
+		//I need RY for tank drive encoder testing in Drive.cpp
+
+		/*
+
 		static Deadband ryDeadband(0.1);
 		float ryVal = 0;
 		if (winchButton.State()){
@@ -136,6 +141,8 @@ private:
 		winchButton.Update(xbox);
 		if (winchButton.State() && !winchButton.PrevState()) winchEffort = ryVal;
 
+		 */
+		winch.Set(0);
 
 		//-----------------------------------//
 	}//teleop Periodic
