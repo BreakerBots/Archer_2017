@@ -12,10 +12,10 @@
 Wings::Wings ():
 	button(XBox::X)
 {
-	leftWing = new DoubleSolenoid(PCM_ID,4,5);
+	leftWing = new DoubleSolenoid(PCM_ID,6,7);
 	leftForward = true;
 
-	rightWing = new DoubleSolenoid(PCM_ID,6,7);
+	rightWing = new DoubleSolenoid(PCM_ID,2,3);
 	rightForward = false;
 
 }//Wings constructor

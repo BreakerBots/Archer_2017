@@ -38,8 +38,8 @@ Drive::Drive ():
 	teleop(true),
 	autoAdjustmentValue(0)
 {
-	rightGear = new DoubleSolenoid(50,2,3);
-	leftGear = new DoubleSolenoid(50,0,1);
+	rightGear = new DoubleSolenoid(50,0,1);
+	leftGear = new DoubleSolenoid(50,4,5);
 
 	//----------Talon Management-----------//
 	right2.SetControlMode(CANTalon::kFollower);

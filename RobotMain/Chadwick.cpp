@@ -60,7 +60,6 @@ private:
 
 	void AutonomousInit(){
 		//Called once at the start of each Auto period
-
 	}
 
 	void AutonomousPeriodic(){
