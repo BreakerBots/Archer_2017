@@ -47,7 +47,7 @@ public:
 	{
 		//----------Initializations---------------//
 
-		pixy = NetworkTable::GetTable("Pixy");
+		pixy = NetworkTable::GetTable("GearPixy");
 		subsystems = NetworkTable::GetTable("Subsystems");
 
 	}//Robot Constructor

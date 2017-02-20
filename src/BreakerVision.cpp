@@ -53,6 +53,7 @@ double BreakerVision::PIDGet(){
 void BreakerVision::ScanForObjects(){
 	if (!pixyTable->ContainsKey("NumOfObjects")){
 		error = 0;
+		printf("PixyTable does not contain key: NumOfObjects\n");
 		return;
 	}
 
@@ -66,15 +67,23 @@ void BreakerVision::ScanForObjects(){
 
 		int tempW = 0;//Width of first object
 
+		printf("\n\nNewLoop\n");
 		for (int i=0; i<std::min(tapeCount,trackedObjectCount); i++){
-			if (pixyTable->ContainsKey("Object"+std::to_string(i))){
+			if (!pixyTable->ContainsKey("Object"+std::to_string(i))){
 				printf("ERROR: BreakerVision: Object%d not found in Network Table\n",i);
 				continue;
 			}
 			std::vector<double> object = pixyTable->GetNumberArray("Object"+std::to_string(i),std::vector<double>());
-			if (i == 0){
+
+			if (0.3 < object[3]/object[4] && object[3]/object[4]<0.7){
+				printf("Lift Target?: ");
+				for (int num : object){
+					printf("%4d",num);
+				}
 				tempW = object[3];
 			}
+
+
 			x_sum += object[1];
 			count++;
 		}

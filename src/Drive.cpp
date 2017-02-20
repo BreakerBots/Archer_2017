@@ -65,13 +65,13 @@ void Drive::Update (const Joystick& xbox){
 		teleop = true;
 
 	//Driving Commands
-	if (teleop){
-		drive.ArcadeDrive(moveDeadband.OutputFor(xbox.GetRawAxis(XBox::LY)),
-						turnDeadband.OutputFor(xbox.GetRawAxis(XBox::LX)));
-	} else {
-		drive.ArcadeDrive(moveDeadband.OutputFor(xbox.GetRawAxis(XBox::LY)),
-						autoAdjustmentValue, true);
-	}
+//	if (teleop){
+//		drive.ArcadeDrive(moveDeadband.OutputFor(xbox.GetRawAxis(XBox::LY)),
+//						turnDeadband.OutputFor(xbox.GetRawAxis(XBox::LX)));
+//	} else {
+//		drive.ArcadeDrive(moveDeadband.OutputFor(xbox.GetRawAxis(XBox::LY)),
+//						autoAdjustmentValue, true);
+//	}
 
 	//------------GEARS----------//
 	if (xbox.GetRawButton(XBox::B)) {
