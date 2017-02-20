@@ -10,6 +10,8 @@
 #include "BreakerVision.h"
 #include "Drive.h"
 
+//#define WINGS_ON_BOARD
+
 class Chadwick: public IterativeRobot {
 
 private:
@@ -23,7 +25,9 @@ private:
 	PIDController gearPlacer;
 	float gearPlacerIZone;
 
+#ifdef WINGS_ON_BOARD
 	Wings wings;
+#endif
 
 	CANTalon winch;
 	float winchEffort;
@@ -38,7 +42,9 @@ public:
 		gearPlacer(0,0,0,&aiming,&drive),
 		gearPlacerIZone(50),
 
+#ifdef WINGS_ON_BOARD
 		wings(),
+#endif
 
 		winch(Talons::WINCH),
 		winchEffort(0),
@@ -72,7 +78,9 @@ private:
 
 		aiming.Init(pixy);
 		drive.Init(subsystems->GetSubTable("Drive"));
+#ifdef WINGS_ON_BOARD
 		wings.Init(subsystems->GetSubTable("Wings"));
+#endif
 
 		SmartDashboard::PutBoolean("DB/LED 0",true);
 		SmartDashboard::PutBoolean("DB/LED 1",true);
@@ -96,7 +104,7 @@ private:
 		//Called PERIODICALLY during the operator period
 
 		//-----------Drive System------------//
-
+		printf("Teleop Start\n");
 		aiming.Update();
 		drive.Update(xbox);
 
@@ -113,26 +121,29 @@ private:
 		}
 
 		//-----------Gear Wings-----------//
-
+#ifdef WINGS_ON_BOARD
 		wings.Update(xbox);
+#endif
 
 		//-------------Winch----------------//
 
-		static Deadband ryDeadband(0.1);
-		float ryVal = 0;
-		if (winchButton.State()){
-			winch.Set(winchEffort);
-		} else {
-			ryVal = ryDeadband.OutputFor(xbox.GetRawAxis(XBox::RY));
-			winch.Set(ryVal);
-			SmartDashboard::PutNumber("Winch RY: ",ryVal);
+		bool winchEnabled = false;
+		if (winchEnabled){
+			static Deadband ryDeadband(0.1);
+			float ryVal = 0;
+			if (winchButton.State()){
+				winch.Set(winchEffort);
+			} else {
+				ryVal = ryDeadband.OutputFor(xbox.GetRawAxis(XBox::RY));
+				winch.Set(ryVal);
+				SmartDashboard::PutNumber("Winch RY: ",ryVal);
+			}
+			SmartDashboard::PutNumber("Winch Current Draw",winch.GetOutputCurrent());
+
+			//Toggle Winch Autonomous
+			winchButton.Update(xbox);
+			if (winchButton.State() && !winchButton.PrevState()) winchEffort = ryVal;
 		}
-		SmartDashboard::PutNumber("Winch Current Draw",winch.GetOutputCurrent());
-
-		//Toggle Winch Autonomous
-		winchButton.Update(xbox);
-		if (winchButton.State() && !winchButton.PrevState()) winchEffort = ryVal;
-
 
 		//-----------------------------------//
 	}//teleop Periodic

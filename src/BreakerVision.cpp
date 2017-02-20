@@ -64,7 +64,7 @@ void BreakerVision::ScanForObjects(){
 		float x_sum = 0;
 		int count = 0;
 
-		int tempW = 0;//Width of first object
+		int targetHeight = 0;//Height of target object
 
 		for (int i=0; i<std::min(tapeCount,trackedObjectCount); i++){
 			if (pixyTable->ContainsKey("Object"+std::to_string(i))){
@@ -73,7 +73,7 @@ void BreakerVision::ScanForObjects(){
 			}
 			std::vector<double> object = pixyTable->GetNumberArray("Object"+std::to_string(i),std::vector<double>());
 			if (i == 0){
-				tempW = object[3];
+				targetHeight = object[4];
 			}
 			x_sum += object[1];
 			count++;
@@ -91,7 +91,12 @@ void BreakerVision::ScanForObjects(){
 
 		trackObject = true;
 
-		pixyTable->PutNumber("Distance to Tape",244.462*2/tempW);
+		if (targetHeight == 0){
+			pixyTable->PutNumber("Distance to Tape",-1);
+		} else {
+			printf("Dividing by %d\n",targetHeight);
+			pixyTable->PutNumber("Distance to Tape",244.462*5/targetHeight);
+		}
 	} else {
 		trackObject = false;
 		error = 0;
