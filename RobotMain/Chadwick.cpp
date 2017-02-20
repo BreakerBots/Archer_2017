@@ -15,7 +15,7 @@ class Chadwick: public IterativeRobot {
 private:
 	Joystick xbox;
 
-	std::shared_ptr<NetworkTable> subsystems;
+	std::shared_ptr<ITable> subsystems;
 	std::shared_ptr<NetworkTable> pixy;
 
 	BreakerVision aiming;
@@ -49,8 +49,8 @@ public:
 	{
 		//----------Initializations---------------//
 
-		pixy = NetworkTable::GetTable("Pixy");
-		subsystems = NetworkTable::GetTable("Subsystems");
+		pixy = NetworkTable::GetTable("GearPixy");
+		subsystems = NetworkTable::GetTable("SmartDashboard/Subsystems");
 
 	}//Robot Constructor
 
