@@ -151,6 +151,7 @@ private:
 			float rxVal = 0;
 			rxVal = rxDeadband.OutputFor(xbox.GetRawAxis(XBox::RX));
 
+			//XBox::BACK
 			if (slurperButton.State())
 				slurper.Set(rxVal);
 

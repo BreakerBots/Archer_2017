@@ -12,6 +12,10 @@
 -src
 	Implementation of classes in include.
 
+-ntClient
+	The source files for a networktables java client to display data on the Driverstation laptop.
+
+
 
 **Instructions**
 To run the code for Archer_2017, do the following:

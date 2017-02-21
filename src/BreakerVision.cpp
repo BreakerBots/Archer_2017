@@ -58,7 +58,7 @@ void BreakerVision::ScanForObjects(){
 	}
 
 	int trackedObjectCount = pixyTable->GetNumber("NumOfObjects",0);
-
+/*
 	if (trackedObjectCount > 0){
 
 		//Average X values of objects
@@ -124,6 +124,6 @@ void BreakerVision::ScanForObjects(){
 		pixyTable->PutNumber("Distance to Tape",-1);
 	}
 	pixyTable->PutNumber("Error",error);
-
+*/
 }//ScanForObjects method
 

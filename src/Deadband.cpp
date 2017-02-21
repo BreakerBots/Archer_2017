@@ -26,9 +26,9 @@ Deadband::Deadband (float deadband, float lowest, float highest){
 float Deadband::OutputFor (float input){
 	//Basic Slope-Intercept Formula
 	float output;
-	if (input < 0){
+	if (input < -deadbandMagnitude){
 		output = mLeft*input+bLeft;
-	} else if (input > 0){
+	} else if (input > deadbandMagnitude){
 		output = mRight*input+bRight;
 	} else {
 		output = 0;
