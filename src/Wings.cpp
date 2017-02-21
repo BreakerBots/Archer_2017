@@ -10,6 +10,7 @@
 #include "ToggleButton.h"
 
 Wings::Wings ():
+	wingsEnabled(true),
 	button(XBox::X)
 {
 	leftWing = new DoubleSolenoid(PCM_ID,6,7);
@@ -21,6 +22,7 @@ Wings::Wings ():
 }//Wings constructor
 
 Wings::Wings (int triggerNum):
+	wingsEnabled(true),
 	button(XBox::X)
 {
 
@@ -40,12 +42,14 @@ void Wings::Init(std::shared_ptr<ITable> nt){
 void Wings::Update(const Joystick& xbox){
 	button.Update(xbox);
 
-	if (button.State()){
-		leftWing->Set(DoubleSolenoid::kForward);
-		rightWing->Set(DoubleSolenoid::kForward);
-	} else {
-		leftWing->Set(DoubleSolenoid::kReverse);
-		rightWing->Set(DoubleSolenoid::kReverse);
+	if (wingsEnabled){
+		if (button.State()){
+			leftWing->Set(DoubleSolenoid::kForward);
+			rightWing->Set(DoubleSolenoid::kForward);
+		} else {
+			leftWing->Set(DoubleSolenoid::kReverse);
+			rightWing->Set(DoubleSolenoid::kReverse);
+		}
 	}
 	PostValues();
 }//Update Method
@@ -68,6 +72,13 @@ void Wings::SetTriggerButton(int newButton){
 }
 int Wings::GetTriggerButton(){
 	return button.TriggerButton();
+}
+
+bool Wings::WingsEnabled(){
+	return wingsEnabled;
+}
+void Wings::SetWingsEnabled(bool areWingsEnabled){
+	wingsEnabled = areWingsEnabled;
 }
 
 void Wings::Open(){

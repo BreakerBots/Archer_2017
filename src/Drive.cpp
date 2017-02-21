@@ -20,6 +20,10 @@
 #include "Talons.h"
 
 Drive::Drive ():
+
+	driveEnabled(true),
+	gearsEnabled(true),
+
 	highGear(false),
 
 	right1(Talons::R1),
@@ -65,13 +69,15 @@ void Drive::Update (const Joystick& xbox){
 		teleop = true;
 
 	//Driving Commands
-//	if (teleop){
-//		drive.ArcadeDrive(moveDeadband.OutputFor(xbox.GetRawAxis(XBox::LY)),
-//						turnDeadband.OutputFor(xbox.GetRawAxis(XBox::LX)));
-//	} else {
-//		drive.ArcadeDrive(moveDeadband.OutputFor(xbox.GetRawAxis(XBox::LY)),
-//						autoAdjustmentValue, true);
-//	}
+	if (driveEnabled){
+		if (teleop){
+			drive.ArcadeDrive(moveDeadband.OutputFor(xbox.GetRawAxis(XBox::LY)),
+							turnDeadband.OutputFor(xbox.GetRawAxis(XBox::LX)));
+		} else {
+			drive.ArcadeDrive(moveDeadband.OutputFor(xbox.GetRawAxis(XBox::LY)),
+							autoAdjustmentValue, true);
+		}
+	}
 
 	//------------GEARS----------//
 	if (xbox.GetRawButton(XBox::B)) {
@@ -81,12 +87,14 @@ void Drive::Update (const Joystick& xbox){
 		highGear = true;
 	}
 
-	if (highGear){
-		leftGear->Set(DoubleSolenoid::kForward);
-		rightGear->Set(DoubleSolenoid::kForward);
-	} else {
-		leftGear->Set(DoubleSolenoid::kReverse);
-		rightGear->Set(DoubleSolenoid::kReverse);
+	if (gearsEnabled){
+		if (highGear){
+			leftGear->Set(DoubleSolenoid::kForward);
+			rightGear->Set(DoubleSolenoid::kForward);
+		} else {
+			leftGear->Set(DoubleSolenoid::kReverse);
+			rightGear->Set(DoubleSolenoid::kReverse);
+		}
 	}
 	PostValues();
 
@@ -98,12 +106,24 @@ bool Drive::Teleop(){
 void Drive::ForceTeleop(){
 	teleop = true;
 }
+bool Drive::DriveEnabled(){
+	return driveEnabled;
+}
+void Drive::SetDriveEnabled(bool isDriveEnabled){
+	driveEnabled = isDriveEnabled;
+}
 
 bool Drive::Highgear(){
 	return highGear;
 }
 void Drive::ChangeGears(bool newGearState){
 	highGear = newGearState;
+}
+bool Drive::GearsEnabled(){
+	return gearsEnabled;
+}
+void Drive::SetGearsEnabled(bool areGearsEnabled){
+	gearsEnabled = areGearsEnabled;
 }
 
 void Drive::PIDWrite (double output){
@@ -113,15 +133,17 @@ void Drive::PIDWrite (double output){
 void Drive::PostValues (){
 	//Post Values to the SmartDashboard/Subsystems/Drive network table
 
-	driveTable->PutString("Control Mode",(teleop?"TELE-OP":"AUTONOMOUS"));
-	driveTable->PutString("Gear",(highGear?"HIGH GEAR":"LOW GEAR"));
-	driveTable->PutNumber("AutoAdjust",autoAdjustmentValue);
+	driveTable->PutBoolean("1.Drive Enabled",driveEnabled);
+	driveTable->PutString("2.Control Mode",(teleop?"TELE-OP":"AUTONOMOUS"));
+	driveTable->PutNumber("5.AutoAdjust",autoAdjustmentValue);
+	driveTable->PutBoolean("3.Gears Enabled",gearsEnabled);
+	driveTable->PutString("4.Gear",(highGear?"HIGH GEAR":"LOW GEAR"));
 
 	//Debug Values: Troubleshoot discrepancy with above values
-	driveTable->PutNumber("Debug/LeftEffort",left1.Get());
-	driveTable->PutNumber("Debug/RightEffort",right1.Get());
+	driveTable->PutNumber("Debug/1.LeftEffort",left1.Get());
+	driveTable->PutNumber("Debug/2.RightEffort",right1.Get());
 
-	driveTable->PutNumber("Debug/LeftGear",leftGear->Get());
-	driveTable->PutNumber("Debug/RightGear",rightGear->Get());
+	driveTable->PutNumber("Debug/3.LeftGear",leftGear->Get());
+	driveTable->PutNumber("Debug/4.RightGear",rightGear->Get());
 
 }

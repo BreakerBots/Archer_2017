@@ -21,16 +21,16 @@ public:
 	enum Shooter {
 		//Chadwick
 		//Not Checked / Made
-		TOP=7, BOTTOM=8, TILT=9, PIVOT=10
+		TOP=27, BOTTOM=28, TILT=29, PIVOT=30
 		//Archer
 	};
 
 	enum Winch {
-		WINCH=40
+		WINCH=8
 	};
 	//Not sure about talon count / name
 	enum Slurper {
-		INTAKE=11
+		INTAKE=7
 	};
 
 	enum Spine {

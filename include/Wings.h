@@ -30,6 +30,8 @@ private:
 
 	std::shared_ptr<ITable> wingsTable;
 
+	bool wingsEnabled;
+
 	const int PCM_ID = 50;
 
 	DoubleSolenoid* leftWing;
@@ -56,6 +58,9 @@ public:
 
 	void SetTriggerButton(int button);
 	int GetTriggerButton();
+
+	bool WingsEnabled();
+	void SetWingsEnabled(bool areWingsEnabled);
 
 	void Open();
 	void Close();

@@ -22,6 +22,9 @@ private:
 		//NetworkTable @ SmartDashboard/Subsystems/Drive
 	std::shared_ptr<ITable> driveTable;
 
+	bool driveEnabled;
+	bool gearsEnabled;
+
 		//Solenoids allow shifts between high and low gears
 	DoubleSolenoid* leftGear;
 	DoubleSolenoid* rightGear;
@@ -60,8 +63,14 @@ public:
 	bool Teleop();
 	void ForceTeleop();
 
+	bool DriveEnabled();
+	void SetDriveEnabled(bool isDriveEnabled);
+
 	bool Highgear();
 	void ChangeGears(bool newGearState);
+
+	bool GearsEnabled();
+	void SetGearsEnabled(bool areGearsEnabled);
 
 	void PIDWrite(double output);
 

@@ -10,7 +10,6 @@
 #include "BreakerVision.h"
 #include "Drive.h"
 
-//#define WINGS_ON_BOARD
 
 class Chadwick: public IterativeRobot {
 
@@ -25,9 +24,10 @@ private:
 	PIDController gearPlacer;
 	float gearPlacerIZone;
 
-#ifdef WINGS_ON_BOARD
 	Wings wings;
-#endif
+
+	CANTalon slurper;
+	ToggleButton slurperButton;
 
 	CANTalon winch;
 	float winchEffort;
@@ -42,9 +42,10 @@ public:
 		gearPlacer(0,0,0,&aiming,&drive),
 		gearPlacerIZone(50),
 
-#ifdef WINGS_ON_BOARD
 		wings(),
-#endif
+
+		slurper(Talons::INTAKE),
+		slurperButton(XBox::BACK,true),
 
 		winch(Talons::WINCH),
 		winchEffort(0),
@@ -78,9 +79,7 @@ private:
 
 		aiming.Init(pixy);
 		drive.Init(subsystems->GetSubTable("Drive"));
-#ifdef WINGS_ON_BOARD
 		wings.Init(subsystems->GetSubTable("Wings"));
-#endif
 
 		SmartDashboard::PutBoolean("DB/LED 0",true);
 		SmartDashboard::PutBoolean("DB/LED 1",true);
@@ -120,28 +119,41 @@ private:
 		}
 
 		//-----------Gear Wings-----------//
-#ifdef WINGS_ON_BOARD
 		wings.Update(xbox);
-#endif
 
 		//-------------Winch----------------//
 
-		bool winchEnabled = false;
+		bool winchEnabled = true;
 		if (winchEnabled){
 			static Deadband ryDeadband(0.1);
 			float ryVal = 0;
+			float winchOutput = 0;
 			if (winchButton.State()){
-				winch.Set(winchEffort);
+				winchOutput = winchEffort;
 			} else {
 				ryVal = ryDeadband.OutputFor(xbox.GetRawAxis(XBox::RY));
-				winch.Set(ryVal);
-				SmartDashboard::PutNumber("Winch RY: ",ryVal);
+				winchOutput = ryVal;
 			}
+			SmartDashboard::PutNumber("Winch Output%",winchOutput);
 			SmartDashboard::PutNumber("Winch Current Draw",winch.GetOutputCurrent());
 
 			//Toggle Winch Autonomous
 			winchButton.Update(xbox);
 			if (winchButton.State() && !winchButton.PrevState()) winchEffort = ryVal;
+		}
+
+		bool slurperEnabled = true;
+		if (slurperEnabled){
+			static Deadband rxDeadband(0.1);
+			float rxVal = 0;
+			rxVal = rxDeadband.OutputFor(xbox.GetRawAxis(XBox::RX));
+
+			if (slurperButton.State())
+				slurper.Set(rxVal);
+
+			SmartDashboard::PutNumber("Slurper Output%: ",rxVal);
+			SmartDashboard::PutNumber("Slurper Current Draw",slurper.GetOutputCurrent());
+			slurperButton.Update(xbox);
 		}
 
 		//-----------------------------------//
