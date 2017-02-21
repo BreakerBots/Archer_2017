@@ -53,7 +53,8 @@ double BreakerVision::PIDGet(){
 void BreakerVision::ScanForObjects(){
 	if (!pixyTable->ContainsKey("NumOfObjects")){
 		error = 0;
-		printf("PixyTable does not contain key: NumOfObjects\n");
+
+//		printf("PixyTable does not contain key: NumOfObjects\n");
 		return;
 	}
 
