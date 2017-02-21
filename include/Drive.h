@@ -28,8 +28,7 @@ private:
 		//Solenoids allow shifts between high and low gears
 	DoubleSolenoid* leftGear;
 	DoubleSolenoid* rightGear;
-//	ToggleButton gearButton;
-	bool highGear;
+	ToggleButton gearButton;
 
 		//3-talon drive for the right side
 	CANTalon right1;
@@ -39,6 +38,8 @@ private:
 	CANTalon left1;
 	CANTalon left2;
 	CANTalon left3;
+
+	ToggleButton directionButton;
 
 		//WPILib control function (ArcadeDrive(float moveVal, float turnVal)
 	RobotDrive drive;
@@ -63,11 +64,14 @@ public:
 	bool Teleop();
 	void ForceTeleop();
 
+	bool DrivingForward();
+	void SetDrivingForward(bool newDirection);
+
 	bool DriveEnabled();
 	void SetDriveEnabled(bool isDriveEnabled);
 
 	bool Highgear();
-	void ChangeGears(bool newGearState);
+	void SetHighGear(bool newGearState);
 
 	bool GearsEnabled();
 	void SetGearsEnabled(bool areGearsEnabled);

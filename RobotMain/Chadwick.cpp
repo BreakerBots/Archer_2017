@@ -134,6 +134,9 @@ private:
 				ryVal = ryDeadband.OutputFor(xbox.GetRawAxis(XBox::RY));
 				winchOutput = ryVal;
 			}
+
+			if (winchOutput< 0) winchOutput *= -1;
+			winch.Set(winchOutput);
 			SmartDashboard::PutNumber("Winch Output%",winchOutput);
 			SmartDashboard::PutNumber("Winch Current Draw",winch.GetOutputCurrent());
 
