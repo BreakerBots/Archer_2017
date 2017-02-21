@@ -65,33 +65,40 @@ void BreakerVision::ScanForObjects(){
 		float x_sum = 0;
 		int count = 0;
 
-		int targetHeight = 0;//Height of target object
 
-		printf("\n\nNewLoop\n");
 		for (int i=0; i<std::min(tapeCount,trackedObjectCount); i++){
 			if (!pixyTable->ContainsKey("Object"+std::to_string(i))){
 				printf("ERROR: BreakerVision: Object%d not found in Network Table\n",i);
 				continue;
 			}
 			std::vector<double> object = pixyTable->GetNumberArray("Object"+std::to_string(i),std::vector<double>());
-<<<<<<< HEAD
 
+			x_sum += object[1];
+			count++;
+		}
+
+		int targetHeight = -1;//Height of target object
+		std::vector<int> heights = std::vector<int>();
+		printf("\n\nNewLoop\n");
+		for (int i=0; i<trackedObjectCount; i++){
+			printf("Reading Object %d\n",i);
+			if (!pixyTable->ContainsKey("Object"+std::to_string(i))){
+				printf("ERROR: BreakerVision: Object%d not found in Network Table\n",i);
+				continue;
+			}
+			std::vector<double> object = pixyTable->GetNumberArray("Object"+std::to_string(i),std::vector<double>());
 			if (0.3 < object[3]/object[4] && object[3]/object[4]<0.7){
 				printf("Lift Target?: ");
 				for (int num : object){
 					printf("%4d",num);
 				}
-				tempW = object[3];
-=======
-			if (i == 0){
-				targetHeight = object[4];
->>>>>>> 41ea60e1f2ac2c14b3bc07828bddb92ade43e9ae
+				printf("\n");
+				heights.push_back(object[4]);
 			}
-
-
-			x_sum += object[1];
-			count++;
 		}
+
+		printf("Heights: %d\n",heights.size());
+
 
 		if (count == 0){
 			printf("ERROR: BreakerVision: Insufficient # of objects posted to Network Table\n");
@@ -108,9 +115,9 @@ void BreakerVision::ScanForObjects(){
 		if (targetHeight == 0){
 			pixyTable->PutNumber("Distance to Tape",-1);
 		} else {
-			printf("Dividing by %d\n",targetHeight);
 			pixyTable->PutNumber("Distance to Tape",244.462*5/targetHeight);
 		}
+
 	} else {
 		trackObject = false;
 		error = 0;

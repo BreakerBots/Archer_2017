@@ -104,7 +104,6 @@ private:
 		//Called PERIODICALLY during the operator period
 
 		//-----------Drive System------------//
-		printf("Teleop Start\n");
 		aiming.Update();
 		drive.Update(xbox);
 
