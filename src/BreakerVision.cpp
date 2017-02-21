@@ -73,6 +73,10 @@ void BreakerVision::ScanForObjects(){
 			}
 			std::vector<double> object = pixyTable->GetNumberArray("Object"+std::to_string(i),std::vector<double>());
 
+			if (object.size() < 5){
+				printf("ERROR: BreakerVision: Object%d has <5 elements\n",i);
+				continue;
+			}
 			x_sum += object[1];
 			count++;
 		}
@@ -88,6 +92,10 @@ void BreakerVision::ScanForObjects(){
 			}
 			std::vector<double> object = pixyTable->GetNumberArray("Object"+std::to_string(i),std::vector<double>());
 			if (0.3 < object[3]/object[4] && object[3]/object[4]<0.7){
+				if (object.size() < 5){
+					printf("ERROR: BreakerVision: Object%d has <5 elements\n",i);
+					continue;
+				}
 				printf("Lift Target?: ");
 				for (int num : object){
 					printf("%4d",num);
@@ -98,7 +106,6 @@ void BreakerVision::ScanForObjects(){
 		}
 
 		printf("Heights: %d\n",heights.size());
-
 
 		if (count == 0){
 			printf("ERROR: BreakerVision: Insufficient # of objects posted to Network Table\n");
