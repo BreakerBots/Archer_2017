@@ -123,7 +123,7 @@ private:
 
 		//-------------Winch----------------//
 
-		bool winchEnabled = true;
+		bool winchEnabled = false;
 		if (winchEnabled){
 			static Deadband ryDeadband(0.1);
 			float ryVal = 0;
@@ -145,7 +145,7 @@ private:
 			if (winchButton.State() && !winchButton.PrevState()) winchEffort = ryVal;
 		}
 
-		bool slurperEnabled = true;
+		bool slurperEnabled = false;
 		if (slurperEnabled){
 			static Deadband rxDeadband(0.1);
 			float rxVal = 0;

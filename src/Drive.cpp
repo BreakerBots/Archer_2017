@@ -58,10 +58,40 @@ Drive::Drive ():
 	left3.SetControlMode(CANTalon::kFollower);
 	left3.Set(Talons::L1);
 
+	//----------Set up Encoders------------//
+		//Note: SetPID is not ambiguous ... stupid Eclipse
+	right1.SetControlMode(CANTalon::kSpeed);
+	right1.SetEncPosition(0);
+	right1.SetIzone(500);
+	right1.Set(0);
+	right1.SetP(0);
+	right1.SetI(0);
+	right1.SetD(0);
+
+	left1.SetControlMode(CANTalon::kSpeed);
+	left1.SetEncPosition(0);
+	left1.Set(0);
+	left1.SetP(0);
+	left1.SetI(0);
+	left1.SetD(0);
+
 }//Basic Constructor
 
 void Drive::Init (std::shared_ptr<ITable> nt){
 	driveTable = nt;
+
+	if (driveTable->GetNumber("PID/LoadDefault",false)){
+		driveTable->PutNumber("PID/Left P",0);
+		driveTable->PutNumber("PID/Left I",0);
+		driveTable->PutNumber("PID/Left D",0);
+		driveTable->PutNumber("PID/Left F",0);
+
+		driveTable->PutNumber("PID/Right P",0.3);
+		driveTable->PutNumber("PID/Right I",0.002);
+		driveTable->PutNumber("PID/Right D",0);
+		driveTable->PutNumber("PID/Right F",0.3);
+	}
+
 }
 void Drive::Update (const Joystick& xbox){
 	//Check autonomous button
@@ -70,6 +100,18 @@ void Drive::Update (const Joystick& xbox){
 	else
 		teleop = true;
 
+	if (driveTable){
+		left1.SetP(driveTable->GetNumber("PID/Left P",0));
+		left1.SetI(driveTable->GetNumber("PID/Left I",0));
+		left1.SetD(driveTable->GetNumber("PID/Left D",0));
+		left1.SetF(driveTable->GetNumber("PID/Left F",0));
+
+		right1.SetP(driveTable->GetNumber("PID/Right P",0));
+		right1.SetI(driveTable->GetNumber("PID/Right I",0));
+		right1.SetD(driveTable->GetNumber("PID/Right D",0));
+		right1.SetF(driveTable->GetNumber("PID/Right F",0));
+	}
+
 	//Driving Commands
 	directionButton.Update(xbox);
 	int rev = 1;
@@ -77,8 +119,13 @@ void Drive::Update (const Joystick& xbox){
 
 	if (driveEnabled){
 		if (teleop){
-			drive.ArcadeDrive(moveDeadband.OutputFor(rev*xbox.GetRawAxis(XBox::LY)),
-							turnDeadband.OutputFor(xbox.GetRawAxis(XBox::LX)));
+
+//			drive.ArcadeDrive(moveDeadband.OutputFor(rev*xbox.GetRawAxis(XBox::LY)),
+//							turnDeadband.OutputFor(xbox.GetRawAxis(XBox::LX)));
+//			drive.ArcadeDrive(2000*moveDeadband.OutputFor(rev*xbox.GetRawAxis(XBox::LY)),0);
+			right1.Set(2000*moveDeadband.OutputFor(rev*xbox.GetRawAxis(XBox::LY)));
+			left1.Set(-2000*moveDeadband.OutputFor(rev*xbox.GetRawAxis(XBox::LY)));
+			printf("Y: %f\n",2000*moveDeadband.OutputFor(rev*xbox.GetRawAxis(XBox::LY)));
 		} else {
 			drive.ArcadeDrive(moveDeadband.OutputFor(rev*xbox.GetRawAxis(XBox::LY)),
 							autoAdjustmentValue, true);
@@ -143,7 +190,7 @@ void Drive::PostValues (){
 	//Post Values to the SmartDashboard/Subsystems/Drive network table
 
 	driveTable->PutBoolean("1.Drive Enabled",driveEnabled);
-	driveTable->PutString("2. Drive Direction",(directionButton.State()?"FORWARD":"REVERSE"));
+	driveTable->PutString("2.Drive Direction",(directionButton.State()?"FORWARD":"REVERSE"));
 	driveTable->PutString("3.Control Mode",(teleop?"TELE-OP":"AUTONOMOUS"));
 	driveTable->PutNumber("4.AutoAdjust",autoAdjustmentValue);
 	driveTable->PutBoolean("5.Gears Enabled",gearsEnabled);
@@ -153,7 +200,13 @@ void Drive::PostValues (){
 	driveTable->PutNumber("Debug/1.LeftEffort",left1.Get());
 	driveTable->PutNumber("Debug/2.RightEffort",right1.Get());
 
-	driveTable->PutNumber("Debug/3.LeftGear",leftGear->Get());
-	driveTable->PutNumber("Debug/4.RightGear",rightGear->Get());
+	driveTable->PutNumber("Debug/3.LeftEncVel",left1.GetEncVel());
+	driveTable->PutNumber("Debug/4.RightEncVel",right1.GetEncVel());
+
+	driveTable->PutNumber("Debug/5.LeftEncPos",left1.GetEncPosition());
+	driveTable->PutNumber("Debug/6.RightEncPos",right1.GetEncPosition());
+
+	driveTable->PutNumber("Debug/7.LeftGear",leftGear->Get());
+	driveTable->PutNumber("Debug/8.RightGear",rightGear->Get());
 
 }
