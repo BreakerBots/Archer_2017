@@ -81,7 +81,7 @@ Drive::Drive ():
 void Drive::Init (std::shared_ptr<ITable> nt){
 	driveTable = nt;
 
-	if (driveTable->GetNumber("PID/LoadDefault",true)){
+	if (driveTable->GetBoolean("PID/LoadDefault",true)){
 		driveTable->PutNumber("PID/Left P",0.5);
 		driveTable->PutNumber("PID/Left I",0.002);
 		driveTable->PutNumber("PID/Left D",0);
