@@ -62,7 +62,7 @@ Drive::Drive ():
 		//Note: SetPID is not ambiguous ... stupid Eclipse
 	right1.SetControlMode(CANTalon::kSpeed);
 	right1.SetEncPosition(0);
-	right1.SetIzone(500);
+	right1.SetIzone(300);
 	right1.Set(0);
 	right1.SetP(0);
 	right1.SetI(0);
@@ -70,6 +70,7 @@ Drive::Drive ():
 
 	left1.SetControlMode(CANTalon::kSpeed);
 	left1.SetEncPosition(0);
+	left1.SetIzone(300);
 	left1.Set(0);
 	left1.SetP(0);
 	left1.SetI(0);
@@ -80,17 +81,18 @@ Drive::Drive ():
 void Drive::Init (std::shared_ptr<ITable> nt){
 	driveTable = nt;
 
-	if (driveTable->GetNumber("PID/LoadDefault",false)){
-		driveTable->PutNumber("PID/Left P",0);
-		driveTable->PutNumber("PID/Left I",0);
+	if (driveTable->GetNumber("PID/LoadDefault",true)){
+		driveTable->PutNumber("PID/Left P",0.5);
+		driveTable->PutNumber("PID/Left I",0.002);
 		driveTable->PutNumber("PID/Left D",0);
-		driveTable->PutNumber("PID/Left F",0);
+		driveTable->PutNumber("PID/Left F",0.4);
 
-		driveTable->PutNumber("PID/Right P",0.3);
+		driveTable->PutNumber("PID/Right P",0.5);
 		driveTable->PutNumber("PID/Right I",0.002);
 		driveTable->PutNumber("PID/Right D",0);
-		driveTable->PutNumber("PID/Right F",0.3);
+		driveTable->PutNumber("PID/Right F",0.4);
 	}
+	drive.SetMaxOutput(4000);
 
 }
 void Drive::Update (const Joystick& xbox){
@@ -120,11 +122,11 @@ void Drive::Update (const Joystick& xbox){
 	if (driveEnabled){
 		if (teleop){
 
-//			drive.ArcadeDrive(moveDeadband.OutputFor(rev*xbox.GetRawAxis(XBox::LY)),
-//							turnDeadband.OutputFor(xbox.GetRawAxis(XBox::LX)));
-//			drive.ArcadeDrive(2000*moveDeadband.OutputFor(rev*xbox.GetRawAxis(XBox::LY)),0);
-			right1.Set(2000*moveDeadband.OutputFor(rev*xbox.GetRawAxis(XBox::LY)));
-			left1.Set(-2000*moveDeadband.OutputFor(rev*xbox.GetRawAxis(XBox::LY)));
+			drive.ArcadeDrive(moveDeadband.OutputFor(rev*xbox.GetRawAxis(XBox::LY)),
+							turnDeadband.OutputFor(xbox.GetRawAxis(XBox::LX)));
+//			drive.ArcadeDrive(2000*moveDeadband.OutputFor(2000*rev*xbox.GetRawAxis(XBox::LY)),0);
+//			right1.Set(2000*moveDeadband.OutputFor(rev*xbox.GetRawAxis(XBox::LY)));
+//			left1.Set(-2000*moveDeadband.OutputFor(rev*xbox.GetRawAxis(XBox::LY)));
 			printf("Y: %f\n",2000*moveDeadband.OutputFor(rev*xbox.GetRawAxis(XBox::LY)));
 		} else {
 			drive.ArcadeDrive(moveDeadband.OutputFor(rev*xbox.GetRawAxis(XBox::LY)),
