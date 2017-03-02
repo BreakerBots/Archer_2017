@@ -8,6 +8,7 @@
 #include "WPILib.h"
 #include "Drive.h"
 #include "XBox.h"
+#include "Talons.h"
 
 /*
  * Drive.h
@@ -16,8 +17,6 @@
  *      Author: DS_2016
  */
 
-#include "WPILib.h"
-#include "Talons.h"
 
 Drive::Drive ():
 
@@ -29,10 +28,14 @@ Drive::Drive ():
 	right1(Talons::R1),
 	right2(Talons::R2),
 	right3(Talons::R3),
+//	encoderRight(right1),
+//	controlRight(0.001,0,0,&encoderRight,&right1),
 
 	left1(Talons::L1),
 	left2(Talons::L2),
 	left3(Talons::L3),
+//	encoderLeft(left1),
+//	controlLeft(0.001,0,0,&encoderLeft, &left1),
 
 	directionButton(XBox::B),
 
@@ -43,6 +46,9 @@ Drive::Drive ():
 
 	teleop(true),
 	autoAdjustmentValue(0)
+
+	,autoTargetRight(10000),
+	autoTargetLeft(-10000)
 {
 	rightGear = new DoubleSolenoid(50,0,1);
 	leftGear = new DoubleSolenoid(50,4,5);
@@ -60,17 +66,17 @@ Drive::Drive ():
 
 	//----------Set up Encoders------------//
 		//Note: SetPID is not ambiguous ... stupid Eclipse
-	right1.SetControlMode(CANTalon::kSpeed);
+	right1.SetControlMode(CANTalon::kPosition);
 	right1.SetEncPosition(0);
-	right1.SetIzone(300);
+	right1.SetIzone(2000);
 	right1.Set(0);
 	right1.SetP(0);
 	right1.SetI(0);
 	right1.SetD(0);
 
-	left1.SetControlMode(CANTalon::kSpeed);
+	left1.SetControlMode(CANTalon::kPosition);
 	left1.SetEncPosition(0);
-	left1.SetIzone(300);
+	left1.SetIzone(2000);
 	left1.Set(0);
 	left1.SetP(0);
 	left1.SetI(0);
@@ -81,20 +87,41 @@ Drive::Drive ():
 void Drive::Init (std::shared_ptr<ITable> nt){
 	driveTable = nt;
 
-	if (driveTable->GetBoolean("PID/LoadDefault",true)){
-		driveTable->PutNumber("PID/Left P",0.5);
-		driveTable->PutNumber("PID/Left I",0.002);
-		driveTable->PutNumber("PID/Left D",0);
-		driveTable->PutNumber("PID/Left F",0.4);
+	right1.SetEncPosition(0);
+	left1.SetEncPosition(0);
 
-		driveTable->PutNumber("PID/Right P",0.5);
-		driveTable->PutNumber("PID/Right I",0.002);
-		driveTable->PutNumber("PID/Right D",0);
-		driveTable->PutNumber("PID/Right F",0.4);
-	}
+	WritePIDTable();
 	drive.SetMaxOutput(4000);
 
+
 }
+
+void Drive::AutonomousInit(){
+
+	right1.ConfigPeakOutputVoltage(6,-6);
+	right1.SetVoltageRampRate(12);//Volts per second
+	left1.ConfigPeakOutputVoltage(6,-6);
+	left1.SetVoltageRampRate(12);
+
+	autoTargetRight = 10000;
+	autoTargetLeft = -10000;
+
+}
+void Drive::Autonomous(/* Why would we need a joystick?*/){
+
+	ReadPIDTable();
+
+
+	autoTargetRight -= autoAdjustmentValue / 100;
+	autoTargetLeft -= autoAdjustmentValue / 100;
+
+	right1.Set(autoTargetRight);
+	left1.Set(autoTargetLeft);
+
+
+	PostValues();
+}
+
 void Drive::Update (const Joystick& xbox){
 	//Check autonomous button
 	if (xbox.GetRawButton(XBox::Y))
@@ -102,17 +129,7 @@ void Drive::Update (const Joystick& xbox){
 	else
 		teleop = true;
 
-	if (driveTable){
-		left1.SetP(driveTable->GetNumber("PID/Left P",0));
-		left1.SetI(driveTable->GetNumber("PID/Left I",0));
-		left1.SetD(driveTable->GetNumber("PID/Left D",0));
-		left1.SetF(driveTable->GetNumber("PID/Left F",0));
-
-		right1.SetP(driveTable->GetNumber("PID/Right P",0));
-		right1.SetI(driveTable->GetNumber("PID/Right I",0));
-		right1.SetD(driveTable->GetNumber("PID/Right D",0));
-		right1.SetF(driveTable->GetNumber("PID/Right F",0));
-	}
+	ReadPIDTable();
 
 	//Driving Commands
 	directionButton.Update(xbox);
@@ -124,9 +141,6 @@ void Drive::Update (const Joystick& xbox){
 
 			drive.ArcadeDrive(moveDeadband.OutputFor(rev*xbox.GetRawAxis(XBox::LY)),
 							turnDeadband.OutputFor(xbox.GetRawAxis(XBox::LX)));
-//			drive.ArcadeDrive(2000*moveDeadband.OutputFor(2000*rev*xbox.GetRawAxis(XBox::LY)),0);
-//			right1.Set(2000*moveDeadband.OutputFor(rev*xbox.GetRawAxis(XBox::LY)));
-//			left1.Set(-2000*moveDeadband.OutputFor(rev*xbox.GetRawAxis(XBox::LY)));
 			printf("Y: %f\n",2000*moveDeadband.OutputFor(rev*xbox.GetRawAxis(XBox::LY)));
 		} else {
 			drive.ArcadeDrive(moveDeadband.OutputFor(rev*xbox.GetRawAxis(XBox::LY)),
@@ -186,6 +200,57 @@ void Drive::SetGearsEnabled(bool areGearsEnabled){
 
 void Drive::PIDWrite (double output){
 	autoAdjustmentValue = output;
+}
+
+void Drive::ReadPIDTable (){
+	if (driveTable){
+		left1.SetP(driveTable->GetNumber("PID/Left P",0));
+		left1.SetI(driveTable->GetNumber("PID/Left I",0));
+		left1.SetD(driveTable->GetNumber("PID/Left D",0));
+		left1.SetF(driveTable->GetNumber("PID/Left F",0));
+
+		right1.SetP(driveTable->GetNumber("PID/Right P",0));
+		right1.SetI(driveTable->GetNumber("PID/Right I",0));
+		right1.SetD(driveTable->GetNumber("PID/Right D",0));
+		right1.SetF(driveTable->GetNumber("PID/Right F",0));
+	}
+}
+
+void Drive::WritePIDTable (){
+	if (!driveTable) return;
+
+	//Velocity Control
+	/*
+	 * P -- 0.5
+	 * I -- 0.002
+	 * D -- 0
+	 * F -- 0.4
+	 *
+	 * IZone: 600 (maybe 300?)
+	 */
+
+	//Position Control (Straight)
+	/*
+	 * P -- 0.05
+	 * I -- 0.0005
+	 * D -- 0.5
+	 * F -- 0
+	 *
+	 * IZone: 2000
+	 */
+
+
+	if (driveTable->GetBoolean("PID/LoadDefault",true)){
+		driveTable->PutNumber("PID/Left P",0.5);
+		driveTable->PutNumber("PID/Left I",0.002);
+		driveTable->PutNumber("PID/Left D",0);
+		driveTable->PutNumber("PID/Left F",0.4);
+
+		driveTable->PutNumber("PID/Right P",0.5);
+		driveTable->PutNumber("PID/Right I",0.002);
+		driveTable->PutNumber("PID/Right D",0);
+		driveTable->PutNumber("PID/Right F",0.4);
+	}
 }
 
 void Drive::PostValues (){

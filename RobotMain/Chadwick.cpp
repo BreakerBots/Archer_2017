@@ -63,26 +63,13 @@ private:
 
 	void RobotInit(){
 		//No idea when this is called
+		CameraServer::GetInstance()->StartAutomaticCapture();
 	}
 
-	void AutonomousInit(){
-		//Called once at the start of each Auto period
-	}
-
-	void AutonomousPeriodic(){
-		//Called PERIODICALLY during the Auto period
-	}
-
-	void TeleopInit(){
-		//Called once at the start of each operator period
-		printf("TELEOP Initialized\n");
-
+	void Init(){
 		aiming.Init(pixy);
 		drive.Init(subsystems->GetSubTable("Drive"));
 		wings.Init(subsystems->GetSubTable("Wings"));
-
-		SmartDashboard::PutBoolean("DB/LED 0",true);
-		SmartDashboard::PutBoolean("DB/LED 1",true);
 
 		//Begin the feed from aiming to drive
 		gearPlacer.Enable();
@@ -91,6 +78,46 @@ private:
 		//always 0, and BreakerVision returns the error off of that
 		//setpoint
 		gearPlacer.SetSetpoint(0);
+
+
+		//PI Loop for GearPlacer
+		SmartDashboard::PutBoolean("DB/LED 0",true);
+		SmartDashboard::PutBoolean("DB/LED 1",true);
+
+	}
+
+	void AutonomousInit(){
+		//Called once at the start of each Auto period
+		printf("Autonomous Initialized\n");
+		Init();
+		drive.AutonomousInit();
+
+		printf("End of Autonomous init\n");
+
+	}
+
+	void AutonomousPeriodic(){
+		//Called PERIODICALLY during the Auto period
+
+		aiming.Update();
+		drive.Autonomous();
+
+		//Update PID loop
+		//PIDController gearPlacer will automatically read error from aiming,
+		//calculate controlEffort, and output that value to the drive system.
+		gearPlacer.SetPID(SmartDashboard::GetNumber("DB/Slider 0",0),SmartDashboard::GetNumber("DB/Slider 1",0),0);
+
+
+		if (gearPlacer.GetError() >= gearPlacerIZone){
+			gearPlacer.m_totalError = 0;
+		}
+	}
+
+	void TeleopInit(){
+		//Called once at the start of each operator period
+		printf("TELEOP Initialized\n");
+		Init();
+
 
 		printf("End of Teleop Init\n");
 

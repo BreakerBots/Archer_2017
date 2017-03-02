@@ -14,6 +14,7 @@
 #include "Talons.h"
 #include "Deadband.h"
 #include "ToggleButton.h"
+#include "TalonEncoder.h"
 
 class Drive : public PIDOutput
 {
@@ -53,12 +54,16 @@ private:
 	bool teleop;
 			//TurnVal output by the PIDController
 	float autoAdjustmentValue;
+	float autoTargetRight;
+	float autoTargetLeft;
 
 public:
 
 	Drive ();
 
 	void Init (std::shared_ptr<ITable> nt);
+	void AutonomousInit();
+	void Autonomous ();
 	void Update (const Joystick& xbox);
 
 	bool Teleop();
@@ -77,6 +82,9 @@ public:
 	void SetGearsEnabled(bool areGearsEnabled);
 
 	void PIDWrite(double output);
+
+	void ReadPIDTable();
+	void WritePIDTable();
 
 	void PostValues();
 };
