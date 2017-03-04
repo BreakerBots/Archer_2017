@@ -113,6 +113,9 @@ void Drive::Autonomous(double *izone/* Why would we need a joystick?*/){
 
 	ReadPIDTable();
 
+	//DB/Slider 0 == 0.01
+	//DB/Slider 1 == 3xE-5
+
 
 //	autoTargetRight -= autoAdjustmentValue / 100;
 //	autoTargetLeft -= autoAdjustmentValue / 100;
