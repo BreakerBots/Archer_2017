@@ -40,7 +40,7 @@ public:
 		aiming(),
 		drive(),
 		gearPlacer(0,0,0,&aiming,&drive),
-		gearPlacerIZone(50),
+		gearPlacerIZone(100),
 
 		wings(),
 
@@ -54,7 +54,7 @@ public:
 	{
 		//----------Initializations---------------//
 
-		pixy = NetworkTable::GetTable("GearPixy");
+		pixy = NetworkTable::GetTable("ShooterPixy");
 		subsystems = NetworkTable::GetTable("Subsystems");
 
 	}//Robot Constructor
@@ -62,8 +62,7 @@ public:
 private:
 
 	void RobotInit(){
-		//No idea when this is called
-		CameraServer::GetInstance()->StartAutomaticCapture();
+//		CameraServer::GetInstance()->StartAutomaticCapture();
 	}
 
 	void Init(){
@@ -100,7 +99,7 @@ private:
 		//Called PERIODICALLY during the Auto period
 
 		aiming.Update();
-		drive.Autonomous();
+		drive.Autonomous(&gearPlacer.m_totalError);
 
 		//Update PID loop
 		//PIDController gearPlacer will automatically read error from aiming,

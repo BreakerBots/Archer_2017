@@ -54,17 +54,18 @@ void BreakerVision::ScanForObjects(){
 	if (!pixyTable->ContainsKey("NumOfObjects")){
 		error = 0;
 
-//		printf("PixyTable does not contain key: NumOfObjects\n");
+		printf("PixyTable does not contain key: NumOfObjects\n");
 		return;
 	}
 
 	int trackedObjectCount = pixyTable->GetNumber("NumOfObjects",0);
-/*
+
+
 	if (trackedObjectCount > 0){
 
 		//Average X values of objects
 		float x_sum = 0;
-		int count = 0;
+		int x_count = 0;
 
 
 		for (int i=0; i<std::min(tapeCount,trackedObjectCount); i++){
@@ -79,11 +80,14 @@ void BreakerVision::ScanForObjects(){
 				continue;
 			}
 			x_sum += object[1];
-			count++;
+			x_count++;
 		}
 
+		//In pixels
 		int targetHeight = -1;//Height of target object
 		std::vector<int> heights = std::vector<int>();
+		int identified_x_sum = 0;
+		int identified_x_count = 0;
 		printf("\n\nNewLoop\n");
 		for (int i=0; i<trackedObjectCount; i++){
 			printf("Reading Object %d\n",i);
@@ -103,22 +107,46 @@ void BreakerVision::ScanForObjects(){
 				}
 				printf("\n");
 				heights.push_back(object[4]);
+				identified_x_sum += object[1];
+				identified_x_count ++;
 			}
 		}
 
 		printf("Heights: %d\n",heights.size());
 
-		if (count == 0){
+		//x_sum = sum of the x values of all pixy objects
+		//x_count = how many of these values there are
+
+		//identified_x_sum = sum of objects that are ~3x5
+		//identified_x_count = how many of these values there are
+		if (identified_x_count == 2){
+			x_sum = identified_x_sum;
+			x_count = identified_x_count;
+		} else
+			if (identified_x_count > 0 && x_count > 2){
+			x_sum = identified_x_sum;
+			x_count = identified_x_count;
+		}
+
+
+
+		if (x_count == 0){
 			printf("ERROR: BreakerVision: Insufficient # of objects posted to Network Table\n");
 			error = 0;
 			trackObject = false;
 			return;
 		}
-		objX = x_sum/count;
+		objX = x_sum/x_count;
 
 		error = center_x-objX;
 
 		trackObject = true;
+
+		int height = 0;
+		for (int z = 0;z<heights.size();z++){
+			height += heights[z];
+		}
+		targetHeight = height / heights.size();
 
 		if (targetHeight == 0){
 			pixyTable->PutNumber("Distance to Tape",-1);
@@ -132,6 +160,6 @@ void BreakerVision::ScanForObjects(){
 		pixyTable->PutNumber("Distance to Tape",-1);
 	}
 	pixyTable->PutNumber("Error",error);
-*/
+
 }//ScanForObjects method
 

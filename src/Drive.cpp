@@ -66,21 +66,21 @@ Drive::Drive ():
 
 	//----------Set up Encoders------------//
 		//Note: SetPID is not ambiguous ... stupid Eclipse
-	right1.SetControlMode(CANTalon::kPosition);
-	right1.SetEncPosition(0);
-	right1.SetIzone(2000);
-	right1.Set(0);
-	right1.SetP(0);
-	right1.SetI(0);
-	right1.SetD(0);
+//	right1.SetControlMode(CANTalon::kPosition);
+//	right1.SetEncPosition(0);
+//	right1.SetIzone(2000);
+//	right1.Set(0);
+//	right1.SetP(0);
+//	right1.SetI(0);
+//	right1.SetD(0);
 
-	left1.SetControlMode(CANTalon::kPosition);
-	left1.SetEncPosition(0);
-	left1.SetIzone(2000);
-	left1.Set(0);
-	left1.SetP(0);
-	left1.SetI(0);
-	left1.SetD(0);
+//	left1.SetControlMode(CANTalon::kPosition);
+//	left1.SetEncPosition(0);
+//	left1.SetIzone(2000);
+//	left1.Set(0);
+//	left1.SetP(0);
+//	left1.SetI(0);
+//	left1.SetD(0);
 
 }//Basic Constructor
 
@@ -91,33 +91,44 @@ void Drive::Init (std::shared_ptr<ITable> nt){
 	left1.SetEncPosition(0);
 
 	WritePIDTable();
-	drive.SetMaxOutput(4000);
+	drive.SetMaxOutput(1);
 
 
 }
-
+int count = 0;
 void Drive::AutonomousInit(){
 
-	right1.ConfigPeakOutputVoltage(6,-6);
-	right1.SetVoltageRampRate(12);//Volts per second
-	left1.ConfigPeakOutputVoltage(6,-6);
-	left1.SetVoltageRampRate(12);
+//	right1.ConfigPeakOutputVoltage(6,-6);
+//	right1.SetVoltageRampRate(12);//Volts per second
+//	left1.ConfigPeakOutputVoltage(6,-6);
+//	left1.SetVoltageRampRate(12);
 
 	autoTargetRight = 10000;
 	autoTargetLeft = -10000;
 
+	count = 0;
+
 }
-void Drive::Autonomous(/* Why would we need a joystick?*/){
+void Drive::Autonomous(double *izone/* Why would we need a joystick?*/){
 
 	ReadPIDTable();
 
 
-	autoTargetRight -= autoAdjustmentValue / 100;
-	autoTargetLeft -= autoAdjustmentValue / 100;
-
-	right1.Set(autoTargetRight);
-	left1.Set(autoTargetLeft);
-
+//	autoTargetRight -= autoAdjustmentValue / 100;
+//	autoTargetLeft -= autoAdjustmentValue / 100;
+	int pauseSec = 3;
+//	right1.Set(autoTargetRight);
+//	left1.Set(autoTargetLeft);
+	count++;
+	if (right1.GetEncPosition() - left1.GetEncPosition() < 10000){
+		drive.ArcadeDrive(-0.6,0);
+		count = 0;
+		*izone = 0;
+	} else if (count > pauseSec*50 && right1.GetEncPosition() - left1.GetEncPosition() < 50000){
+		drive.ArcadeDrive(-0.6,autoAdjustmentValue);
+	} else {
+		printf("Count: %d\n",count);
+	}
 
 	PostValues();
 }

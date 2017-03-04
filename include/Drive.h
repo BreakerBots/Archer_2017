@@ -63,7 +63,7 @@ public:
 
 	void Init (std::shared_ptr<ITable> nt);
 	void AutonomousInit();
-	void Autonomous ();
+	void Autonomous (double *izone);
 	void Update (const Joystick& xbox);
 
 	bool Teleop();
