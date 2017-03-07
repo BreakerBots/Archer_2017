@@ -114,7 +114,7 @@ void Drive::AutonomousInit(){
 	right1.SetEncPosition(0);
 	left1.SetEncPosition(0);
 
-	autoState = AutoState::kStraight;
+	autoState = AutoState::kHook;
 
 
 }
@@ -156,8 +156,11 @@ void Drive::Autonomous(AutonomousMode autonomousMode, double *izone/* Why would 
 			//Todo
 			//Chadwick Straight Back (1000, -1030)
 			//1000/sec 900/sec
-			right1.Set(-515);
-			left1.Set(700);
+//			right1.Set(-515);
+//			left1.Set(700);
+
+//			drive.ArcadeDrive(0.65,-0.15);
+			drive.ArcadeDrive(0.65,-0.4);
 
 			if (pixyTable->GetNumber("TargetData/targetting_number",0) == 2){
 				autoState = AutoState::kClose;
