@@ -11,24 +11,71 @@
 	//Todo: don't put magic constants in the class declaration.
 	//Make them defaults that have set/get methods.
 
-BreakerVision::BreakerVision (){
+BreakerVision::BreakerVision ():
 		//Midpoint of the pixy cam's viewing window
-	center_x = 160;
-	center_y = 100;
-		//If objects are spotted by the pixy cam, track those objects
-	trackObject = false;
-		//# of objects to track targetX becomes the average
-	tapeCount = 1;
-		//Current targetX of the image
-	objX = center_x;
+	center_x(160),
+	center_y(100),
 
-	error = 0;
+		//If objects are spotted, track.
+	trackObject(false),
+		//Current tracking x
+	objX(center_x),
+		//error from current target
+	error(0),
+
+	target_width(3),
+	target_height(5),
+	epsilon(0.3),
+
+	target_y_lower(90),
+	target_y_higher(200),
+
+	target_distance_closer(26),
+	target_distance_farther(200)
+{
 } //Class Consructor
 
-void BreakerVision::Init(std::shared_ptr<NetworkTable> table){
+void BreakerVision::InitTable(std::shared_ptr<NetworkTable> table){
 	//Inform user that slider 2 is in use
 	pixyTable = table;
-	SmartDashboard::PutBoolean("DB/LED 2", true);
+	pixyTable->AddTableListener(this);
+
+	if (
+			pixyTable->ContainsKey("TargetData/target_width") &&
+			pixyTable->ContainsKey("TargetData/target_height") &&
+			pixyTable->ContainsKey("TargetData/epsilon") &&
+
+			pixyTable->ContainsKey("TargetData/target_y_lower") &&
+			pixyTable->ContainsKey("TargetData/target_y_higher") &&
+
+			pixyTable->ContainsKey("TargetData/target_distance_closer") &&
+			pixyTable->ContainsKey("TargetData/target_distance_farther")
+
+	){
+
+		target_width 	= pixyTable->GetNumber("TargetData/target_width",3);
+		target_height 	= pixyTable->GetNumber("TargetData/target_height",5);
+		epsilon 		= pixyTable->GetNumber("TargetData/epsilon",0.3);
+
+		target_y_lower  = pixyTable->GetNumber("TargetData/target_y_lower",90);
+		target_y_higher = pixyTable->GetNumber("TargetData/target_y_higher",200);
+
+		target_distance_closer = pixyTable->GetNumber("TargetData/target_distance_closer",26);
+		target_distance_farther = pixyTable->GetNumber("TargetData/target_distance_farther",200);
+
+	} else {
+		pixyTable->PutNumber("TargetData/target_width",3);
+		pixyTable->PutNumber("TargetData/target_height",5);
+		pixyTable->PutNumber("TargetData/epsilon",0.3);
+
+		pixyTable->PutNumber("TargetData/target_y_lower",90);
+		pixyTable->PutNumber("TargetData/target_y_higher",200);
+
+		pixyTable->PutNumber("TargetData/target_distance_closer",26);
+		pixyTable->PutNumber("TargetData/target_distance_farther",200);
+
+	}
+
 }//init method
 
 void BreakerVision::Update(){
@@ -36,9 +83,12 @@ void BreakerVision::Update(){
 	 * Run continuously from Tele-Op
 	 *
 	 */
+	std::vector<PixyObjectData> objects;
 
-	tapeCount = SmartDashboard::GetNumber("DB/Slider 2",1);
-	ScanForObjects();
+	FindTape(objects);
+	error = GetTargetError(objects);
+
+	pixyTable->PutNumber("TargetData/error",error);
 
 }//Loop method
 
@@ -46,120 +96,100 @@ double BreakerVision::PIDGet(){
 	return error;
 }//PIDGet method (from PIDSource)
 
-//Relies upon the following data being available on the Network Table
-//	Frame
-//	NumOfObjects
-//	ObjectN for [0:N] objects
-void BreakerVision::ScanForObjects(){
-	if (!pixyTable->ContainsKey("NumOfObjects")){
-		error = 0;
+void BreakerVision::FindTape(std::vector<PixyObjectData> &objects){
 
-		printf("PixyTable does not contain key: NumOfObjects\n");
-		return;
+	LoadObjectsFromPixy(objects);
+//	EliminateMalformedObjects(objects);
+//
+//	EliminateMisproportionedObjects(objects);
+//	EliminateHighObjects(objects);
+
+}//FindTape
+
+void BreakerVision::LoadObjectsFromPixy(std::vector<PixyObjectData> &objects){
+
+	for (int i=0; i<pixyTable->GetNumber("Incoming/number_of_objects",0); i++){
+		if (!pixyTable->ContainsKey("Incoming/object" + std::to_string(i))){
+			printf("ERROR: BreakerVision: Incoming/object%d not found in Network Table\n",i);
+			continue;
+		}
+		PixyObjectData object = pixyTable->GetNumberArray("Incoming/object" + std::to_string(i), PixyObjectData());
+		objects.push_back(object);
+	}
+}//LoadObjectsFromPixy
+
+void BreakerVision::EliminateMalformedObjects(std::vector<PixyObjectData> &objects){
+	for (unsigned int i=0; i<objects.size(); i++){
+		if (objects[i].size() != 5){
+			objects.erase(objects.begin() + i);
+		}
+	}
+}//EliminateMalformedObjects
+
+void BreakerVision::EliminateMisproportionedObjects(std::vector<PixyObjectData> &objects){
+	//Proportion bounds
+	float lower_bound = (target_width/target_height)-epsilon;
+	float upper_bound = (target_width/target_height)+epsilon;
+
+	for (unsigned int i=0; i<objects.size(); i++){
+		float width_to_height = objects[i][3] / objects[i][4];
+
+		if (width_to_height < lower_bound || upper_bound < width_to_height)
+			objects.erase(objects.begin() + i);
+	}
+}//EliminateMisproportionedObjects
+
+void BreakerVision::EliminateHighObjects(std::vector<PixyObjectData> &objects){
+
+	for (unsigned int i=0; i<objects.size(); i++){
+		if (objects[i][1] < target_y_lower || target_y_higher < objects[i][1])
+			objects.erase(objects.begin() + i);
 	}
 
-	int trackedObjectCount = pixyTable->GetNumber("NumOfObjects",0);
+}//EliminateHighObjects
 
+int BreakerVision::GetTargetError(std::vector<PixyObjectData> &objects){
 
-	if (trackedObjectCount > 0){
-
-		//Average X values of objects
-		float x_sum = 0;
-		int x_count = 0;
-
-
-		for (int i=0; i<std::min(tapeCount,trackedObjectCount); i++){
-			if (!pixyTable->ContainsKey("Object"+std::to_string(i))){
-				printf("ERROR: BreakerVision: Object%d not found in Network Table\n",i);
-				continue;
-			}
-			std::vector<double> object = pixyTable->GetNumberArray("Object"+std::to_string(i),std::vector<double>());
-
-			if (object.size() < 5){
-				printf("ERROR: BreakerVision: Object%d has <5 elements\n",i);
-				continue;
-			}
-			x_sum += object[1];
-			x_count++;
-		}
-
-		//In pixels
-		int targetHeight = -1;//Height of target object
-		std::vector<int> heights = std::vector<int>();
-		int identified_x_sum = 0;
-		int identified_x_count = 0;
-		printf("\n\nNewLoop\n");
-		for (int i=0; i<trackedObjectCount; i++){
-			printf("Reading Object %d\n",i);
-			if (!pixyTable->ContainsKey("Object"+std::to_string(i))){
-				printf("ERROR: BreakerVision: Object%d not found in Network Table\n",i);
-				continue;
-			}
-			std::vector<double> object = pixyTable->GetNumberArray("Object"+std::to_string(i),std::vector<double>());
-			if (0.3 < object[3]/object[4] && object[3]/object[4]<0.7){
-				if (object.size() < 5){
-					printf("ERROR: BreakerVision: Object%d has <5 elements\n",i);
-					continue;
-				}
-				printf("Lift Target?: ");
-				for (int num : object){
-					printf("%4d",num);
-				}
-				printf("\n");
-				heights.push_back(object[4]);
-				identified_x_sum += object[1];
-				identified_x_count ++;
-			}
-		}
-
-		printf("Heights: %d\n",heights.size());
-
-		//x_sum = sum of the x values of all pixy objects
-		//x_count = how many of these values there are
-
-		//identified_x_sum = sum of objects that are ~3x5
-		//identified_x_count = how many of these values there are
-		if (identified_x_count == 2){
-			x_sum = identified_x_sum;
-			x_count = identified_x_count;
-		} else
-			if (identified_x_count > 0 && x_count > 2){
-			x_sum = identified_x_sum;
-			x_count = identified_x_count;
-		}
-
-
-
-		if (x_count == 0){
-			printf("ERROR: BreakerVision: Insufficient # of objects posted to Network Table\n");
-			error = 0;
-			trackObject = false;
-			return;
-		}
-		objX = x_sum/x_count;
-
-		error = center_x-objX;
-
-		trackObject = true;
-
-		int height = 0;
-		for (int z = 0;z<heights.size();z++){
-			height += heights[z];
-		}
-		targetHeight = height / heights.size();
-
-		if (targetHeight == 0){
-			pixyTable->PutNumber("Distance to Tape",-1);
-		} else {
-			pixyTable->PutNumber("Distance to Tape",244.462*5/targetHeight);
-		}
-
-	} else {
-		trackObject = false;
-		error = 0;
-		pixyTable->PutNumber("Distance to Tape",-1);
+	if (objects.size() == 0) {
+		printf("Targetting on 0 objects!\n");
+		pixyTable->PutNumber("TargetData/targetting_number",objects.size());
+		pixyTable->PutNumber("TargetData/measured_distance",200);
+		return 0;
 	}
-	pixyTable->PutNumber("Error",error);
+	int sum = 0;
+	int sum_height = 0;
 
-}//ScanForObjects method
+	for (unsigned int i=0;i<objects.size();i++){
+		sum += objects[i][1];
+		sum_height += objects[i][4];
+	}
+
+	printf("Targetting on %d objects!\n",objects.size());
+	pixyTable->PutNumber("TargetData/targetting_number",objects.size());
+	pixyTable->PutNumber("TargetData/measured_distance",244.462*5/ (sum_height/objects.size()) );
+
+	return center_x - ( sum / objects.size() );
+
+}//GetTargetError
+
+void BreakerVision::ValueChanged (ITable *source, llvm::StringRef key, std::shared_ptr< nt::Value > value, bool isNew){
+	if (	key.equals("TargetData/target_width") ||
+			key.equals("TargetData/target_height") ||
+			key.equals("TargetData/epsilon") ||
+
+			key.equals("TargetData/target_y_lower") ||
+			key.equals("TargetData/target_y_higher")
+	){
+		target_width = pixyTable->GetNumber("TargetData/target_width",3);
+		target_height = pixyTable->GetNumber("TargetData/target_height",5);
+		epsilon = pixyTable->GetNumber("TargetData/epsilon",0.05);
+
+		target_y_lower  = pixyTable->GetNumber("TargetData/target_y_lower",90);
+		target_y_higher = pixyTable->GetNumber("TargetData/target_y_higher",200);
+
+		target_distance_closer = pixyTable->GetNumber("TargetData/target_distance_closer",26);
+		target_distance_farther = pixyTable->GetNumber("TargetData/target_distance_farther",200);
+	}
+}//ValueChanged
+
 

@@ -48,7 +48,8 @@ Drive::Drive ():
 	autoAdjustmentValue(0)
 
 	,autoTargetRight(10000),
-	autoTargetLeft(-10000)
+	autoTargetLeft(-10000),
+	autoState(Drive::AutoState::kStraight)
 {
 	rightGear = new DoubleSolenoid(50,0,1);
 	leftGear = new DoubleSolenoid(50,4,5);
@@ -84,8 +85,9 @@ Drive::Drive ():
 
 }//Basic Constructor
 
-void Drive::Init (std::shared_ptr<ITable> nt){
+void Drive::Init (std::shared_ptr<ITable> nt, std::shared_ptr<NetworkTable> pixyNt){
 	driveTable = nt;
+	pixyTable = pixyNt;
 
 	right1.SetEncPosition(0);
 	left1.SetEncPosition(0);
@@ -95,7 +97,6 @@ void Drive::Init (std::shared_ptr<ITable> nt){
 
 
 }
-int count = 0;
 void Drive::AutonomousInit(){
 
 //	right1.ConfigPeakOutputVoltage(6,-6);
@@ -106,31 +107,95 @@ void Drive::AutonomousInit(){
 	autoTargetRight = 10000;
 	autoTargetLeft = -10000;
 
-	count = 0;
+	right1.SetEncPosition(0);
+	left1.SetEncPosition(0);
+
+	autoState = AutoState::kStraight;
+
 
 }
-void Drive::Autonomous(double *izone/* Why would we need a joystick?*/){
+void Drive::Autonomous(AutonomousMode autonomousMode, double *izone/* Why would we need a joystick?*/){
+
 
 	ReadPIDTable();
 
-	//DB/Slider 0 == 0.01
-	//DB/Slider 1 == 3xE-5
+	int advanceInches;
+	int turnDistance;
 
+	switch (autonomousMode){
+	case kDefault:
+		printf("Default Autonomous Mode\n");
+		break;
+	case kGear1:
+		if (right1.GetEncPosition() - left1.GetEncPosition() < 10000){
+			drive.ArcadeDrive(0.5,0);
+			*izone = 0;
+		} else if (right1.GetEncPosition() - left1.GetEncPosition() < 50000){
+			drive.ArcadeDrive(0.6,autoAdjustmentValue);
+		} else {
+//			printf("Count: %d\n",count);
+		}
+		break;
+	case kGear2:
+		break;
+	case kGear3:
+		advanceInches = -60;//inches
+		turnDistance = 3500;//counts
+//		turnDistance = 16.75 * 1000 / 3.32; // ~5,045
 
-//	autoTargetRight -= autoAdjustmentValue / 100;
-//	autoTargetLeft -= autoAdjustmentValue / 100;
-	int pauseSec = 3;
-//	right1.Set(autoTargetRight);
-//	left1.Set(autoTargetLeft);
-	count++;
-	if (right1.GetEncPosition() - left1.GetEncPosition() < 10000){
-		drive.ArcadeDrive(-0.6,0);
-		count = 0;
-		*izone = 0;
-	} else if (count > pauseSec*50 && right1.GetEncPosition() - left1.GetEncPosition() < 50000){
-		drive.ArcadeDrive(-0.6,autoAdjustmentValue);
-	} else {
-		printf("Count: %d\n",count);
+		switch (autoState){
+		case kStraight:
+			printf("Straight\n");
+			drive.ArcadeDrive(0.65,0);
+
+			if ((right1.GetEncPosition() - left1.GetEncPosition())/2 < advanceInches * 1000 / 3.32){
+				autoState = AutoState::kTurn;
+				driveTable->PutNumber("RCount",right1.GetEncPosition());
+			}
+			break;
+		case kTurn:
+			printf("Turn\n");
+			drive.ArcadeDrive(0,pixyTable->GetNumber("TargetData/turnEffort"));
+
+//			if (right1.GetEncPosition() > driveTable->GetNumber("RCount",0) + turnDistance){
+			if (pixyTable->GetNumber("TargetData/targetting_number",0) == 2){
+				autoState = AutoState::kClose;
+				*izone = 0;
+			}
+			break;
+		case kAim:
+			printf("Aim\n");
+			drive.ArcadeDrive(0,autoAdjustmentValue);
+
+			if (pixyTable->GetNumber("TargetData/error",25) < driveTable->GetNumber("TargetTolerance",20)){
+				autoState = AutoState::kClose;
+			}
+			break;
+		case kClose:
+			printf("Close\n");
+			drive.ArcadeDrive(0.5,autoAdjustmentValue);
+
+//			if (right1.GetEncPosition() < driveTable->GetNumber("RCount",0) - (35*1000/3.32)) {
+			if (pixyTable->GetNumber("TargetData/measured_distance",300) < pixyTable->GetNumber("TargetData/target_distance_closer",0)){
+				autoState = AutoState::kFinal;
+				driveTable->PutNumber("RCount",right1.GetEncPosition());
+			}
+			break;
+		case kFinal:
+			printf("Final\n");
+			drive.ArcadeDrive(0.5,0);
+
+			if (right1.GetEncPosition() < driveTable->GetNumber("RCount",0) - (10*1000/3.32)) {
+				autoState = AutoState::kDone;
+			}
+			break;
+		case kDone:
+			drive.ArcadeDrive(0.0,0);
+			break;
+		}//autoState switch
+		break;
+	default:
+		printf("Unknown autonomous mode\n");
 	}
 
 	PostValues();
@@ -251,6 +316,16 @@ void Drive::WritePIDTable (){
 	 * F -- 0
 	 *
 	 * IZone: 2000
+	 */
+
+	//Aiming PID
+	/*
+	 * P -- 0.001
+	 * I -- 3xE-5
+	 * D -- 0
+	 * F -- 0
+	 *
+	 * IZone: 100
 	 */
 
 

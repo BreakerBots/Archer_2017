@@ -18,10 +18,20 @@
 
 class Drive : public PIDOutput
 {
+public:
+	enum AutonomousMode {
+			kDefault, kGear1, kGear2, kGear3
+		};
+	enum AutoState {
+			kStraight, kTurn, kAim, kClose, kFinal, kDone
+		};
+
 private:
+
 
 		//NetworkTable @ SmartDashboard/Subsystems/Drive
 	std::shared_ptr<ITable> driveTable;
+	std::shared_ptr<NetworkTable> pixyTable;
 
 	bool driveEnabled;
 	bool gearsEnabled;
@@ -57,13 +67,15 @@ private:
 	float autoTargetRight;
 	float autoTargetLeft;
 
+	AutoState autoState;
+
 public:
 
 	Drive ();
 
-	void Init (std::shared_ptr<ITable> nt);
+	void Init (std::shared_ptr<ITable> nt, std::shared_ptr<NetworkTable> pixyNt);
 	void AutonomousInit();
-	void Autonomous (double *izone);
+	void Autonomous (AutonomousMode mode, double *izone);
 	void Update (const Joystick& xbox);
 
 	bool Teleop();

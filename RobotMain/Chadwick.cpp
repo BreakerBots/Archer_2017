@@ -23,6 +23,7 @@ private:
 	Drive drive;
 	PIDController gearPlacer;
 	float gearPlacerIZone;
+	Drive::AutonomousMode autonomousMode;
 
 	Wings wings;
 
@@ -39,8 +40,9 @@ public:
 
 		aiming(),
 		drive(),
-		gearPlacer(0,0,0,&aiming,&drive),
+		gearPlacer(0.01,0.0001,0,&aiming,&drive),
 		gearPlacerIZone(100),
+		autonomousMode(Drive::kGear3),
 
 		wings(),
 
@@ -54,7 +56,7 @@ public:
 	{
 		//----------Initializations---------------//
 
-		pixy = NetworkTable::GetTable("ShooterPixy");
+		pixy = NetworkTable::GetTable("GearPixy");
 		subsystems = NetworkTable::GetTable("Subsystems");
 
 	}//Robot Constructor
@@ -66,8 +68,11 @@ private:
 	}
 
 	void Init(){
-		aiming.Init(pixy);
-		drive.Init(subsystems->GetSubTable("Drive"));
+//		printf("Vision init\n");
+		aiming.InitTable(pixy);
+//		printf("Vision init done\n");
+
+		drive.Init(subsystems->GetSubTable("Drive"), pixy);
 		wings.Init(subsystems->GetSubTable("Wings"));
 
 		//Begin the feed from aiming to drive
@@ -77,11 +82,8 @@ private:
 		//always 0, and BreakerVision returns the error off of that
 		//setpoint
 		gearPlacer.SetSetpoint(0);
+		gearPlacer.InitTable(pixy->GetSubTable("PID"));
 
-
-		//PI Loop for GearPlacer
-		SmartDashboard::PutBoolean("DB/LED 0",true);
-		SmartDashboard::PutBoolean("DB/LED 1",true);
 
 	}
 
@@ -90,6 +92,8 @@ private:
 		printf("Autonomous Initialized\n");
 		Init();
 		drive.AutonomousInit();
+		autonomousMode = Drive::AutonomousMode::kGear3;
+//		autonomousMode = (Drive::AutonomousMode) (int) subsystems->GetSubTable("Drive")->GetNumber("AutonomousMode");
 
 		printf("End of Autonomous init\n");
 
@@ -99,12 +103,12 @@ private:
 		//Called PERIODICALLY during the Auto period
 
 		aiming.Update();
-		drive.Autonomous(&gearPlacer.m_totalError);
+		drive.Autonomous(autonomousMode,&gearPlacer.m_totalError);
 
 		//Update PID loop
 		//PIDController gearPlacer will automatically read error from aiming,
 		//calculate controlEffort, and output that value to the drive system.
-		gearPlacer.SetPID(SmartDashboard::GetNumber("DB/Slider 0",0),SmartDashboard::GetNumber("DB/Slider 1",0),0);
+//		gearPlacer.SetPID(SmartDashboard::GetNumber("DB/Slider 0",0),SmartDashboard::GetNumber("DB/Slider 1",0),0);
 
 
 		if (gearPlacer.GetError() >= gearPlacerIZone){
@@ -135,7 +139,7 @@ private:
 		//Update PID loop
 		//PIDController gearPlacer will automatically read error from aiming,
 		//calculate controlEffort, and output that value to the drive system.
-		gearPlacer.SetPID(SmartDashboard::GetNumber("DB/Slider 0",0),SmartDashboard::GetNumber("DB/Slider 1",0),0);
+//		gearPlacer.SetPID(SmartDashboard::GetNumber("DB/Slider 0",0),SmartDashboard::GetNumber("DB/Slider 1",0),0);
 
 		if (xbox.GetRawButton(XBox::BACK)){
 			gearPlacer.m_totalError = 0;
