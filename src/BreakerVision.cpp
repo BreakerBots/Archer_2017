@@ -39,6 +39,7 @@ void BreakerVision::InitTable(std::shared_ptr<NetworkTable> table){
 	//Inform user that slider 2 is in use
 	pixyTable = table;
 	pixyTable->AddTableListener(this);
+	error = 0;
 
 	if (
 			pixyTable->ContainsKey("TargetData/target_width") &&
@@ -53,7 +54,7 @@ void BreakerVision::InitTable(std::shared_ptr<NetworkTable> table){
 
 	){
 
-		target_width 	= pixyTable->GetNumber("TargetData/target_width",3);
+		target_width 	= pixyTable->GetNumber("TargetData/target_width",2);
 		target_height 	= pixyTable->GetNumber("TargetData/target_height",5);
 		epsilon 		= pixyTable->GetNumber("TargetData/epsilon",0.3);
 
@@ -64,7 +65,7 @@ void BreakerVision::InitTable(std::shared_ptr<NetworkTable> table){
 		target_distance_farther = pixyTable->GetNumber("TargetData/target_distance_farther",200);
 
 	} else {
-		pixyTable->PutNumber("TargetData/target_width",3);
+		pixyTable->PutNumber("TargetData/target_width",2);
 		pixyTable->PutNumber("TargetData/target_height",5);
 		pixyTable->PutNumber("TargetData/epsilon",0.3);
 
@@ -86,7 +87,11 @@ void BreakerVision::Update(){
 	std::vector<PixyObjectData> objects;
 
 	FindTape(objects);
+//	new_error = GetTargetError(objects);
 	error = GetTargetError(objects);
+
+//	lowpass_error =
+
 
 	pixyTable->PutNumber("TargetData/error",error);
 
@@ -99,10 +104,10 @@ double BreakerVision::PIDGet(){
 void BreakerVision::FindTape(std::vector<PixyObjectData> &objects){
 
 	LoadObjectsFromPixy(objects);
-//	EliminateMalformedObjects(objects);
+	EliminateMalformedObjects(objects);
 //
-//	EliminateMisproportionedObjects(objects);
-//	EliminateHighObjects(objects);
+	EliminateMisproportionedObjects(objects);
+	EliminateHighObjects(objects);
 
 }//FindTape
 
@@ -154,8 +159,15 @@ int BreakerVision::GetTargetError(std::vector<PixyObjectData> &objects){
 		printf("Targetting on 0 objects!\n");
 		pixyTable->PutNumber("TargetData/targetting_number",objects.size());
 		pixyTable->PutNumber("TargetData/measured_distance",200);
-		return 0;
+		return error;
 	}
+
+//	if (objects.size() == 1) {
+//		printf("Targetting on 1 object!\n");
+//		pixyTable->PutNumber("TargetData/targetting_number",objects.size());
+//		pixyTable->PutNumber("TargetData/measured_distance",200);
+//	}
+
 	int sum = 0;
 	int sum_height = 0;
 
@@ -167,6 +179,8 @@ int BreakerVision::GetTargetError(std::vector<PixyObjectData> &objects){
 	printf("Targetting on %d objects!\n",objects.size());
 	pixyTable->PutNumber("TargetData/targetting_number",objects.size());
 	pixyTable->PutNumber("TargetData/measured_distance",244.462*5/ (sum_height/objects.size()) );
+
+	if (objects.size() == 1) return error;
 
 	return center_x - ( sum / objects.size() );
 

@@ -23,7 +23,7 @@ public:
 			kDefault, kGear1, kGear2, kGear3
 		};
 	enum AutoState {
-			kStraight, kTurn, kAim, kClose, kFinal, kDone
+			kHook, kStraight, kTurn, kWait, kClose, kFinal, kDone
 		};
 
 private:
@@ -68,6 +68,7 @@ private:
 	float autoTargetLeft;
 
 	AutoState autoState;
+	Timer autoTimer;
 
 public:
 

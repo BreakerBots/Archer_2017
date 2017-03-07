@@ -40,7 +40,7 @@ public:
 
 		aiming(),
 		drive(),
-		gearPlacer(0.01,0.0001,0,&aiming,&drive),
+		gearPlacer(0.025,0.0002,0,&aiming,&drive),
 		gearPlacerIZone(100),
 		autonomousMode(Drive::kGear3),
 
@@ -92,8 +92,8 @@ private:
 		printf("Autonomous Initialized\n");
 		Init();
 		drive.AutonomousInit();
-		autonomousMode = Drive::AutonomousMode::kGear3;
-//		autonomousMode = (Drive::AutonomousMode) (int) subsystems->GetSubTable("Drive")->GetNumber("AutonomousMode");
+//		autonomousMode = Drive::AutonomousMode::kGear1;
+		autonomousMode = (Drive::AutonomousMode) (int) subsystems->GetSubTable("Drive")->GetNumber("AutonomousMode",0);
 
 		printf("End of Autonomous init\n");
 

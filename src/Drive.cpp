@@ -50,6 +50,7 @@ Drive::Drive ():
 	,autoTargetRight(10000),
 	autoTargetLeft(-10000),
 	autoState(Drive::AutoState::kStraight)
+	,autoTimer()
 {
 	rightGear = new DoubleSolenoid(50,0,1);
 	leftGear = new DoubleSolenoid(50,4,5);
@@ -65,17 +66,18 @@ Drive::Drive ():
 	left3.SetControlMode(CANTalon::kFollower);
 	left3.Set(Talons::L1);
 
+
 	//----------Set up Encoders------------//
 		//Note: SetPID is not ambiguous ... stupid Eclipse
-//	right1.SetControlMode(CANTalon::kPosition);
+//	right1.SetControlMode(CANTalon::kSpeed);
 //	right1.SetEncPosition(0);
 //	right1.SetIzone(2000);
 //	right1.Set(0);
 //	right1.SetP(0);
 //	right1.SetI(0);
 //	right1.SetD(0);
-
-//	left1.SetControlMode(CANTalon::kPosition);
+//
+//	left1.SetControlMode(CANTalon::kSpeed);
 //	left1.SetEncPosition(0);
 //	left1.SetIzone(2000);
 //	left1.Set(0);
@@ -92,8 +94,10 @@ void Drive::Init (std::shared_ptr<ITable> nt, std::shared_ptr<NetworkTable> pixy
 	right1.SetEncPosition(0);
 	left1.SetEncPosition(0);
 
+	ReadPIDTable();
 	WritePIDTable();
 	drive.SetMaxOutput(1);
+//	drive.SetMaxOutput(650);
 
 
 }
@@ -127,23 +131,39 @@ void Drive::Autonomous(AutonomousMode autonomousMode, double *izone/* Why would 
 		printf("Default Autonomous Mode\n");
 		break;
 	case kGear1:
-		if (right1.GetEncPosition() - left1.GetEncPosition() < 10000){
+
+		advanceInches = -(112-30);
+		if (right1.GetEncPosition() - left1.GetEncPosition() > -10000){
 			drive.ArcadeDrive(0.5,0);
 			*izone = 0;
-		} else if (right1.GetEncPosition() - left1.GetEncPosition() < 50000){
-			drive.ArcadeDrive(0.6,autoAdjustmentValue);
+		} else if (right1.GetEncPosition() - left1.GetEncPosition() > -50000){
+			drive.ArcadeDrive(0.5,autoAdjustmentValue);
 		} else {
+			drive.ArcadeDrive(0.0,0.0);
 //			printf("Count: %d\n",count);
 		}
 		break;
 	case kGear2:
 		break;
 	case kGear3:
-		advanceInches = -60;//inches
+		advanceInches = -64;//inches
 		turnDistance = 3500;//counts
 //		turnDistance = 16.75 * 1000 / 3.32; // ~5,045
 
 		switch (autoState){
+		case kHook:
+			printf("Hook\n");
+			//Todo
+			//Chadwick Straight Back (1000, -1030)
+			//1000/sec 900/sec
+			right1.Set(-515);
+			left1.Set(700);
+
+			if (pixyTable->GetNumber("TargetData/targetting_number",0) == 2){
+				autoState = AutoState::kClose;
+				*izone = 0;
+			}
+			break;
 		case kStraight:
 			printf("Straight\n");
 			drive.ArcadeDrive(0.65,0);
@@ -155,19 +175,22 @@ void Drive::Autonomous(AutonomousMode autonomousMode, double *izone/* Why would 
 			break;
 		case kTurn:
 			printf("Turn\n");
-			drive.ArcadeDrive(0,pixyTable->GetNumber("TargetData/turnEffort"));
+			drive.ArcadeDrive(0,pixyTable->GetNumber("TargetData/turnEffort",-0.48));
 
 //			if (right1.GetEncPosition() > driveTable->GetNumber("RCount",0) + turnDistance){
 			if (pixyTable->GetNumber("TargetData/targetting_number",0) == 2){
-				autoState = AutoState::kClose;
+				autoState = AutoState::kWait;
+				autoTimer.Reset();
+				autoTimer.Start();
 				*izone = 0;
 			}
 			break;
-		case kAim:
-			printf("Aim\n");
-			drive.ArcadeDrive(0,autoAdjustmentValue);
+		case kWait:
+			printf("Wait\n");
+			drive.ArcadeDrive(0,0.0);
 
-			if (pixyTable->GetNumber("TargetData/error",25) < driveTable->GetNumber("TargetTolerance",20)){
+//			if (pixyTable->GetNumber("TargetData/error",25) < driveTable->GetNumber("TargetTolerance",20)){
+			if (autoTimer.Get() > 2.0){
 				autoState = AutoState::kClose;
 			}
 			break;
@@ -320,8 +343,8 @@ void Drive::WritePIDTable (){
 
 	//Aiming PID
 	/*
-	 * P -- 0.001
-	 * I -- 3xE-5
+	 * P -- 0.025
+	 * I -- 2xE-4
 	 * D -- 0
 	 * F -- 0
 	 *
