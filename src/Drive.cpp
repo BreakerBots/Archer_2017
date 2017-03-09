@@ -216,9 +216,9 @@ void Drive::Autonomous(AutonomousMode autonomousMode/* Why would we need a joyst
 	PostValues();
 }
 
-void Drive::Update (const Joystick &xbox){
+void Drive::Update (Joystick &xbox){
 
-	if (xbox.GetRawAxis(Buttons::kAimingTrigger) > 0.5)
+	if (xbox.GetRawAxis(Buttons::kAimingTrigger) > 0.3)
 		autoAim.SetState(true);
 	else
 		autoAim.SetState(false);

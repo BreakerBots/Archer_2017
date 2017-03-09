@@ -1,0 +1,43 @@
+/*
+ * Cannon.h
+ *
+ *  Created on: Mar 8, 2017
+ *      Author: DS-2017
+ */
+
+#ifndef CANNON_H_
+#define CANNON_H_
+
+#include "WPILib.h"
+
+class Cannon : public ITableListener {
+
+public:
+	enum Buttons {
+		kShooterTrigger = XBox::RY
+	};
+private:
+
+	Servo angleServo;
+	int angle;
+
+	CANTalon talonLeft, talonRight;
+	float speed;
+	Deadband ryDeadband;
+
+	std::shared_ptr<ITable> table;
+
+public:
+
+	Cannon ();
+	void InitTable (std::shared_ptr<ITable> table);
+
+	void Update(bool enabled);
+
+	void ValueChanged(ITable* source, llvm::StringRef key,
+			std::shared_ptr<nt::Value> value, bool isNew);
+
+};
+
+
+#endif /* CANNON_H_ */

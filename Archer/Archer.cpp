@@ -69,6 +69,7 @@ private:
 
 		drive.Init(subsystems->GetSubTable("Drive"), pixy);
 		wings.Init(subsystems->GetSubTable("Wings"));
+		wings.Close();
 
 		//Begin the feed from aiming to drive
 		gearPlacer.Enable();
@@ -98,6 +99,15 @@ private:
 
 		aiming.Update();
 		drive.Autonomous(autonomousMode);
+
+		//-----------Gear Wings-----------//
+		wings.Update(xbox);
+
+		//----------Slurper---------------//
+		slurper.Update(xbox);
+
+		//-------------Winch----------------//
+		winch.Update(xbox);
 
 		//Update PID loop
 		//PIDController gearPlacer will automatically read error from aiming,

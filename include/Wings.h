@@ -49,7 +49,7 @@ public:
 	Wings (int trigger);
 
 	void Init (std::shared_ptr<ITable> nt);
-	void Update(const Joystick& xbox);
+	void Update(Joystick &xbox);
 
 	void SetLeftForward(bool newLeftForward);
 	bool GetLeftForward();

@@ -85,7 +85,7 @@ public:
 	void Init (std::shared_ptr<ITable> nt, std::shared_ptr<NetworkTable> pixyNt);
 	void AutonomousInit();
 	void Autonomous (AutonomousMode mode);
-	void Update (const Joystick &xbox);
+	void Update (Joystick &xbox);
 
 	bool Teleop();
 	void ForceTeleop();

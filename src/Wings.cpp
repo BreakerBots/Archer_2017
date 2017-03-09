@@ -39,7 +39,7 @@ void Wings::Init(std::shared_ptr<ITable> nt){
 	wingsTable = nt;
 }
 
-void Wings::Update(const Joystick& xbox){
+void Wings::Update(Joystick &xbox){
 	button.Update(xbox);
 
 	if (wingsEnabled){
