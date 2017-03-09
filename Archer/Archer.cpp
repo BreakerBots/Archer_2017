@@ -3,12 +3,16 @@
 
 #include <algorithm>
 
-#include "Talons.h"
-#include "Wings.h"
 #include "XBox.h"
+#include "Talons.h"
+
 #include "ToggleButton.h"
+
 #include "BreakerVision.h"
 #include "Drive.h"
+#include "Wings.h"
+#include "Winch.h"
+#include "Slurper.h"
 
 
 class Archer: public IterativeRobot {
@@ -20,42 +24,33 @@ private:
 	std::shared_ptr<NetworkTable> pixy;
 
 	BreakerVision aiming;
-	Drive drive;
 	PIDController gearPlacer;
 	float gearPlacerIZone;
+
+	Drive drive;
 	Drive::AutonomousMode autonomousMode;
 
 	Wings wings;
-
-	CANTalon slurper;
-	ToggleButton slurperButton;
-
-	CANTalon winch;
-	float winchEffort;
-	ToggleButton winchButton;
+	Slurper slurper;
+	Winch winch;
 
 public:
 	Archer():
 		xbox(0),
 
 		aiming(),
-		drive(),
 		gearPlacer(0.025,0.0002,0,&aiming,&drive),
 		gearPlacerIZone(100),
+
+		drive(&gearPlacer.m_totalError),
 		autonomousMode(Drive::kGear3),
 
-		wings(),
-
-		slurper(Talons::INTAKE),
-		slurperButton(XBox::BACK,true),
-
-		winch(Talons::WINCH),
-		winchEffort(0),
-		winchButton(XBox::RB)
+		wings (),
+		slurper (),
+		winch ()
 
 	{
 		//----------Initializations---------------//
-
 		pixy = NetworkTable::GetTable("GearPixy");
 		subsystems = NetworkTable::GetTable("Subsystems");
 
@@ -84,7 +79,6 @@ private:
 		gearPlacer.SetSetpoint(0);
 		gearPlacer.InitTable(pixy->GetSubTable("PID"));
 
-
 	}
 
 	void AutonomousInit(){
@@ -97,13 +91,13 @@ private:
 
 		printf("End of Autonomous init\n");
 
-	}
+	}//Autonomous Init
 
 	void AutonomousPeriodic(){
 		//Called PERIODICALLY during the Auto period
 
 		aiming.Update();
-		drive.Autonomous(autonomousMode,&gearPlacer.m_totalError);
+		drive.Autonomous(autonomousMode);
 
 		//Update PID loop
 		//PIDController gearPlacer will automatically read error from aiming,
@@ -111,10 +105,10 @@ private:
 //		gearPlacer.SetPID(SmartDashboard::GetNumber("DB/Slider 0",0),SmartDashboard::GetNumber("DB/Slider 1",0),0);
 
 
-		if (gearPlacer.GetError() >= gearPlacerIZone){
-			gearPlacer.m_totalError = 0;
-		}
-	}
+//		if (gearPlacer.GetError() >= gearPlacerIZone){
+//			gearPlacer.m_totalError = 0;
+//		}
+	}//AutonomousPeriodic
 
 	void TeleopInit(){
 		//Called once at the start of each operator period
@@ -141,18 +135,26 @@ private:
 		//calculate controlEffort, and output that value to the drive system.
 //		gearPlacer.SetPID(SmartDashboard::GetNumber("DB/Slider 0",0),SmartDashboard::GetNumber("DB/Slider 1",0),0);
 
+
+		/*
 		if (xbox.GetRawButton(XBox::BACK)){
 			gearPlacer.m_totalError = 0;
 		}
 		if (gearPlacer.GetError() >= gearPlacerIZone){
 			gearPlacer.m_totalError = 0;
 		}
+		*/
 
 		//-----------Gear Wings-----------//
 		wings.Update(xbox);
 
-		//-------------Winch----------------//
+		//----------Slurper---------------//
+		slurper.Update(xbox);
 
+		//-------------Winch----------------//
+		winch.Update(xbox);
+
+		/* Old Winch
 		bool winchEnabled = false;
 		if (winchEnabled){
 			static Deadband ryDeadband(0.1);
@@ -174,21 +176,20 @@ private:
 			winchButton.Update(xbox);
 			if (winchButton.State() && !winchButton.PrevState()) winchEffort = ryVal;
 		}
+		*/
+		/* Old Slurper
+		static Deadband rxDeadband(0.1);
+		float rxVal = 0;
+		rxVal = rxDeadband.OutputFor(xbox.GetRawAxis(XBox::RX));
 
-		bool slurperEnabled = false;
-		if (slurperEnabled){
-			static Deadband rxDeadband(0.1);
-			float rxVal = 0;
-			rxVal = rxDeadband.OutputFor(xbox.GetRawAxis(XBox::RX));
+		//XBox::BACK
+		if (slurperButton.State())
+			slurper.Set(rxVal);
 
-			//XBox::BACK
-			if (slurperButton.State())
-				slurper.Set(rxVal);
-
-			SmartDashboard::PutNumber("Slurper Output%: ",rxVal);
-			SmartDashboard::PutNumber("Slurper Current Draw",slurper.GetOutputCurrent());
-			slurperButton.Update(xbox);
-		}
+		SmartDashboard::PutNumber("Slurper Output%: ",rxVal);
+		SmartDashboard::PutNumber("Slurper Current Draw",slurper.GetOutputCurrent());
+		slurperButton.Update(xbox);
+		*/
 
 		//-----------------------------------//
 	}//teleop Periodic

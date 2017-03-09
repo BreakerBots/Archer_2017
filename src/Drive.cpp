@@ -18,39 +18,34 @@
  */
 
 
-Drive::Drive ():
+Drive::Drive (double *izoneFromGearPlacer):
 
 	driveEnabled(true),
 	gearsEnabled(true),
 
-	gearButton(XBox::A),
+	gearButton(Buttons::kGearToggle),
 
 	right1(Talons::R1),
 	right2(Talons::R2),
 	right3(Talons::R3),
-//	encoderRight(right1),
-//	controlRight(0.001,0,0,&encoderRight,&right1),
 
 	left1(Talons::L1),
 	left2(Talons::L2),
 	left3(Talons::L3),
-//	encoderLeft(left1),
-//	controlLeft(0.001,0,0,&encoderLeft, &left1),
 
-	directionButton(XBox::B),
+	directionButton(Buttons::kDirectionToggle),
 
 	drive (left1, right1),
 
 	moveDeadband(0.1),
 	turnDeadband(0.2),
 
-	teleop(true),
-	autoAdjustmentValue(0)
+	izone(izoneFromGearPlacer),
+	autoAim(-1),
+	autoAdjustmentValue(0),
 
-	,autoTargetRight(10000),
-	autoTargetLeft(-10000),
-	autoState(Drive::AutoState::kStraight)
-	,autoTimer()
+	autoState(Drive::AutoState::kStraight),
+	autoTimer()
 {
 	rightGear = new DoubleSolenoid(50,0,1);
 	leftGear = new DoubleSolenoid(50,4,5);
@@ -108,9 +103,6 @@ void Drive::AutonomousInit(){
 //	left1.ConfigPeakOutputVoltage(6,-6);
 //	left1.SetVoltageRampRate(12);
 
-	autoTargetRight = 10000;
-	autoTargetLeft = -10000;
-
 	right1.SetEncPosition(0);
 	left1.SetEncPosition(0);
 
@@ -118,13 +110,11 @@ void Drive::AutonomousInit(){
 
 
 }
-void Drive::Autonomous(AutonomousMode autonomousMode, double *izone/* Why would we need a joystick?*/){
-
+void Drive::Autonomous(AutonomousMode autonomousMode/* Why would we need a joystick?*/){
 
 	ReadPIDTable();
 
 	int advanceInches;
-	int turnDistance;
 
 	switch (autonomousMode){
 	case kDefault:
@@ -147,7 +137,6 @@ void Drive::Autonomous(AutonomousMode autonomousMode, double *izone/* Why would 
 		break;
 	case kGear3:
 		advanceInches = -64;//inches
-		turnDistance = 3500;//counts
 //		turnDistance = 16.75 * 1000 / 3.32; // ~5,045
 
 		switch (autoState){
@@ -227,35 +216,35 @@ void Drive::Autonomous(AutonomousMode autonomousMode, double *izone/* Why would 
 	PostValues();
 }
 
-void Drive::Update (const Joystick& xbox){
-	//Check autonomous button
-	if (xbox.GetRawButton(XBox::Y))
-		teleop = false;
+void Drive::Update (const Joystick &xbox){
+
+	if (xbox.GetRawAxis(Buttons::kAimingTrigger) > 0.5)
+		autoAim.SetState(true);
 	else
-		teleop = true;
+		autoAim.SetState(false);
+
 
 	ReadPIDTable();
 
-	//Driving Commands
-	directionButton.Update(xbox);
 	int rev = 1;
+	directionButton.Update(xbox);
 	if (directionButton.State()) rev = -1;
 
 	if (driveEnabled){
-		if (teleop){
-
+		if (autoAim.State()){
 			drive.ArcadeDrive(moveDeadband.OutputFor(rev*xbox.GetRawAxis(XBox::LY)),
 							turnDeadband.OutputFor(xbox.GetRawAxis(XBox::LX)));
-			printf("Y: %f\n",2000*moveDeadband.OutputFor(rev*xbox.GetRawAxis(XBox::LY)));
 		} else {
+			if (!autoAim.PrevState())
+				*izone = 0;
+
 			drive.ArcadeDrive(moveDeadband.OutputFor(rev*xbox.GetRawAxis(XBox::LY)),
-							autoAdjustmentValue, true);
+							autoAdjustmentValue);
 		}
 	}
 
 	//------------GEARS----------//
 	gearButton.Update(xbox);
-
 	if (gearsEnabled){
 		if (gearButton.State()){
 			leftGear->Set(DoubleSolenoid::kForward);
@@ -270,10 +259,10 @@ void Drive::Update (const Joystick& xbox){
 }//Update method
 
 bool Drive::Teleop(){
-	return teleop;
+	return autoAim.State();
 }
 void Drive::ForceTeleop(){
-	teleop = true;
+	autoAim.SetState(true);
 }
 
 bool Drive::DrivingForward(){
@@ -373,7 +362,7 @@ void Drive::PostValues (){
 
 	driveTable->PutBoolean("1.Drive Enabled",driveEnabled);
 	driveTable->PutString("2.Drive Direction",(directionButton.State()?"FORWARD":"REVERSE"));
-	driveTable->PutString("3.Control Mode",(teleop?"TELE-OP":"AUTONOMOUS"));
+	driveTable->PutString("3.Control Mode",(autoAim.State()?"AUTONOMOUS":"TELE-OP"));
 	driveTable->PutNumber("4.AutoAdjust",autoAdjustmentValue);
 	driveTable->PutBoolean("5.Gears Enabled",gearsEnabled);
 	driveTable->PutString("6.Driving Gear",(gearButton.State()?"HIGH GEAR":"LOW GEAR"));
