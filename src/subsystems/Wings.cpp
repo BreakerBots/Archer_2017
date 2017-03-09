@@ -5,9 +5,9 @@
  *      Author: DS_2016
  */
 
-#include "XBox.h"
-#include "Wings.h"
-#include "ToggleButton.h"
+#include "general/XBox.h"
+#include "subsystems/Wings.h"
+#include "general/ToggleButton.h"
 
 Wings::Wings ():
 	wingsEnabled(true),

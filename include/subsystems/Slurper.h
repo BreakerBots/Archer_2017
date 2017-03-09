@@ -11,8 +11,8 @@
 #include "WPILib.h"
 #include "CANTalon.h"
 
-#include "Talons.h"
-#include "ToggleButton.h"
+#include "general/Talons.h"
+#include "general/ToggleButton.h"
 
 class Slurper {
 private:

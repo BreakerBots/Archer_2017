@@ -8,9 +8,11 @@
 #include "WPILib.h"
 #include "CANTalon.h"
 
-#include "XBox.h"
-#include "Talons.h"
-#include "Winch.h"
+#include "general/XBox.h"
+#include "general/Talons.h"
+#include "general/Deadband.h"
+
+#include "subsystems/Winch.h"
 
 Winch::Winch ():
 	talon (Talons::WINCH),
@@ -24,6 +26,10 @@ void Winch::Update (const Joystick &xbox){
 
 	float effort = deadband.OutputFor(xbox.GetRawAxis(joyTrigger));
 
+
 	talon.Set(effort);
-}
+	if (effort != 0)
+		printf("Winch current draw: %.4f\n",talon.GetOutputCurrent());
+
+}//Update
 

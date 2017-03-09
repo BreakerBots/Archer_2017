@@ -11,10 +11,9 @@
 #include "WPILib.h"
 #include "CANTalon.h"
 
-#include "XBox.h"
-#include "Talons.h"
-
-#include "Deadband.h"
+#include "general/XBox.h"
+#include "general/Talons.h"
+#include "general/Deadband.h"
 
 class Cannon : public ITableListener {
 

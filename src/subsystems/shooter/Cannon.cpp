@@ -8,10 +8,10 @@
 #include "WPILib.h"
 #include "CANTalon.h"
 
-#include "Talons.h"
-
-#include "Cannon.h"
+#include "general/Talons.h"
 #include "VelocityController.h"
+
+#include "subsystems/shooter/Cannon.h"
 
 Cannon::Cannon ():
 

@@ -6,7 +6,7 @@
  */
 
 #include "WPILib.h"
-#include "BreakerVision.h"
+#include "subsystems/drive/BreakerVision.h"
 
 	//Todo: don't put magic constants in the class declaration.
 	//Make them defaults that have set/get methods.

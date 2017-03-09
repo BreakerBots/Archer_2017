@@ -8,9 +8,10 @@
 #include "WPILib.h"
 #include "CANTalon.h"
 
-#include "XBox.h"
-#include "Talons.h"
-#include "Slurper.h"
+#include "general/XBox.h"
+#include "general/Talons.h"
+
+#include "subsystems/Slurper.h"
 
 Slurper::Slurper ():
 	talon(Talons::INTAKE),

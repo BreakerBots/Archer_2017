@@ -6,8 +6,9 @@
  */
 
 #include "Joystick.h"
-#include "ToggleButton.h"
-#include "XBox.h"
+
+#include "general/XBox.h"
+#include "general/ToggleButton.h"
 
 ToggleButton::ToggleButton(int trigger, bool startingState){
 	triggerButton = trigger;

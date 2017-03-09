@@ -3,7 +3,8 @@
 #define WING_H
 
 #include "WPILib.h"
-#include "ToggleButton.h"
+
+#include "general/ToggleButton.h"
 
 class Wings {
 

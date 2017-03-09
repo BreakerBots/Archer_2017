@@ -10,7 +10,7 @@
 
 #include "WPILib.h"
 
-#include "HoldButton.h"
+#include "general/HoldButton.h"
 
 HoldButton::HoldButton(int joyButton):
 	joystickButton (joyButton),

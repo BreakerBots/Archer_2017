@@ -3,18 +3,19 @@
 
 #include <algorithm>
 
-#include "XBox.h"
-#include "Talons.h"
+#include "general/XBox.h"
+#include "general/Talons.h"
 
-#include "ToggleButton.h"
+#include "general/ToggleButton.h"
 
-#include "BreakerVision.h"
-#include "Drive.h"
+#include "subsystems/drive/BreakerVision.h"
+#include "subsystems/drive/Drive.h"
 
-#include "Wings.h"
-#include "Winch.h"
-#include "Slurper.h"
-#include "Shooter.h"
+#include "subsystems/Wings.h"
+#include "subsystems/Winch.h"
+#include "subsystems/Slurper.h"
+
+#include "subsystems/shooter/Shooter.h"
 
 class Archer: public IterativeRobot {
 

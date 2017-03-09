@@ -11,11 +11,11 @@
 #include "WPILib.h"
 #include "CANTalon.h"
 
-#include "XBox.h"
-#include "Talons.h"
-#include "Deadband.h"
-#include "ToggleButton.h"
-#include "HoldButton.h"
+#include "general/XBox.h"
+#include "general/Talons.h"
+#include "general/Deadband.h"
+#include "general/ToggleButton.h"
+#include "general/HoldButton.h"
 
 class Drive : public PIDOutput
 {

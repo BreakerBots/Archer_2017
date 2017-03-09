@@ -6,9 +6,11 @@
  */
 
 #include "WPILib.h"
-#include "Drive.h"
-#include "XBox.h"
-#include "Talons.h"
+
+#include "general/XBox.h"
+#include "general/Talons.h"
+
+#include "subsystems/drive/Drive.h"
 
 /*
  * Drive.h
@@ -142,7 +144,7 @@ void Drive::Autonomous(AutonomousMode autonomousMode/* Why would we need a joyst
 		switch (autoState){
 		case kHook:
 			printf("Hook\n");
-			//Todo
+			//Todo figure out how to curve archer in autonomous
 			//Chadwick Straight Back (1000, -1030)
 			//1000/sec 900/sec
 //			right1.Set(-515);

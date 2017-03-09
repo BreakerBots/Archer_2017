@@ -7,11 +7,12 @@
 
 #include "WPILib.h"
 
-#include "XBox.h"
-#include "ToggleButton.h"
+#include "general/XBox.h"
+#include "general/ToggleButton.h"
+
 #include "VelocityController.h"
 
-#include "Shooter.h"
+#include "subsystems/shooter/Shooter.h"
 /*
 	ToggleButton shooterButton;
 
