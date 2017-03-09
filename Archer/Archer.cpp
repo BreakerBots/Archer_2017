@@ -65,7 +65,7 @@ public:
 private:
 
 	void RobotInit(){
-//		CameraServer::GetInstance()->StartAutomaticCapture();
+		CameraServer::GetInstance()->StartAutomaticCapture();
 	}
 
 	void Init(){
@@ -85,6 +85,8 @@ private:
 		//setpoint
 		gearPlacer.SetSetpoint(0);
 		gearPlacer.InitTable(pixy->GetSubTable("PID"));
+
+		shooter.InitTable(subsystems->GetSubTable("shooter"));
 
 	}
 
