@@ -8,11 +8,12 @@
 #ifndef SHOOTER_H_
 #define SHOOTER_H_
 
+#include "WPILib.h"
+
 #include "XBox.h"
 #include "ToggleButton.h"
+#include "VelocityController.h"
 
-#include "Indexer.h"
-#include "Spine.h"
 #include "Cannon.h"
 
 class Shooter {
@@ -24,10 +25,10 @@ public:
 
 private:
 
-	ToggleButton shooterButton;
+	ToggleButton enableButton;
 
-	Indexer indexer;
-	Spine spine;
+	VelocityController indexer;
+	VelocityController spine;
 	Cannon cannon;
 
 	std::shared_ptr<ITable> table;
@@ -35,7 +36,13 @@ private:
 public:
 
 	Shooter ();
+
+	void Update (Joystick &xbox);
+
 	void InitTable (std::shared_ptr<ITable> table);
+
+	void ValueChanged(ITable* source, llvm::StringRef key,
+				std::shared_ptr<nt::Value> value, bool isNew);
 
 };
 

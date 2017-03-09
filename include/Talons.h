@@ -21,7 +21,7 @@ public:
 	enum Shooter {
 		//Chadwick
 		//Not Checked / Made
-		TOP=27, BOTTOM=28, TILT=29, PIVOT=30
+		kLeft=27, kRight=28, TILT=29, PIVOT=30
 		//Archer
 	};
 
@@ -34,7 +34,7 @@ public:
 	};
 
 	enum Spine {
-		INDEXER=12
+		INDEXER=12, SPINE=13
 	};
 };
 

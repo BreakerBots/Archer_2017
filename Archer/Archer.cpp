@@ -10,10 +10,11 @@
 
 #include "BreakerVision.h"
 #include "Drive.h"
+
 #include "Wings.h"
 #include "Winch.h"
 #include "Slurper.h"
-
+#include "Shooter.h"
 
 class Archer: public IterativeRobot {
 
@@ -34,6 +35,8 @@ private:
 	Slurper slurper;
 	Winch winch;
 
+	Shooter shooter;
+
 public:
 	Archer():
 		xbox(0),
@@ -47,7 +50,9 @@ public:
 
 		wings (),
 		slurper (),
-		winch ()
+		winch (),
+
+		shooter()
 
 	{
 		//----------Initializations---------------//
@@ -109,6 +114,9 @@ private:
 		//-------------Winch----------------//
 		winch.Update(xbox);
 
+		//-----------Shooter-------------//
+		shooter.Update(xbox);
+
 		//Update PID loop
 		//PIDController gearPlacer will automatically read error from aiming,
 		//calculate controlEffort, and output that value to the drive system.
@@ -164,6 +172,9 @@ private:
 		//-------------Winch----------------//
 		winch.Update(xbox);
 
+		//------------Shooter----------------//
+		shooter.Update(xbox);
+
 		/* Old Winch
 		bool winchEnabled = false;
 		if (winchEnabled){
@@ -206,6 +217,7 @@ private:
 
 	void TestPeriodic(){
 	}
+
 };
 
 START_ROBOT_CLASS(Archer)
