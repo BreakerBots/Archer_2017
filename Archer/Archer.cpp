@@ -17,6 +17,9 @@
 
 #include "subsystems/shooter/Shooter.h"
 
+
+//#define SHOOTER
+
 class Archer: public IterativeRobot {
 
 private:
@@ -36,7 +39,9 @@ private:
 	Slurper slurper;
 	Winch winch;
 
+#ifdef SHOOTER
 	Shooter shooter;
+#endif
 
 public:
 	Archer():
@@ -51,9 +56,11 @@ public:
 
 		wings (),
 		slurper (),
-		winch (),
+		winch ()
 
-		shooter()
+#ifdef SHOOTER
+		,shooter()
+#endif
 
 	{
 		//----------Initializations---------------//
@@ -86,7 +93,9 @@ private:
 		gearPlacer.SetSetpoint(0);
 		gearPlacer.InitTable(pixy->GetSubTable("PID"));
 
+#ifdef SHOOTER
 		shooter.InitTable(subsystems->GetSubTable("shooter"));
+#endif
 
 	}
 
@@ -118,7 +127,9 @@ private:
 		winch.Update(xbox);
 
 		//-----------Shooter-------------//
+#ifdef SHOOTER
 		shooter.Update(xbox);
+#endif
 
 		//Update PID loop
 		//PIDController gearPlacer will automatically read error from aiming,
@@ -176,44 +187,9 @@ private:
 		winch.Update(xbox);
 
 		//------------Shooter----------------//
+#ifdef SHOOTER
 		shooter.Update(xbox);
-
-		/* Old Winch
-		bool winchEnabled = false;
-		if (winchEnabled){
-			static Deadband ryDeadband(0.1);
-			float ryVal = 0;
-			float winchOutput = 0;
-			if (winchButton.State()){
-				winchOutput = winchEffort;
-			} else {
-				ryVal = ryDeadband.OutputFor(xbox.GetRawAxis(XBox::RY));
-				winchOutput = ryVal;
-			}
-
-			if (winchOutput< 0) winchOutput *= -1;
-			winch.Set(winchOutput);
-			SmartDashboard::PutNumber("Winch Output%",winchOutput);
-			SmartDashboard::PutNumber("Winch Current Draw",winch.GetOutputCurrent());
-
-			//Toggle Winch Autonomous
-			winchButton.Update(xbox);
-			if (winchButton.State() && !winchButton.PrevState()) winchEffort = ryVal;
-		}
-		*/
-		/* Old Slurper
-		static Deadband rxDeadband(0.1);
-		float rxVal = 0;
-		rxVal = rxDeadband.OutputFor(xbox.GetRawAxis(XBox::RX));
-
-		//XBox::BACK
-		if (slurperButton.State())
-			slurper.Set(rxVal);
-
-		SmartDashboard::PutNumber("Slurper Output%: ",rxVal);
-		SmartDashboard::PutNumber("Slurper Current Draw",slurper.GetOutputCurrent());
-		slurperButton.Update(xbox);
-		*/
+#endif
 
 		//-----------------------------------//
 	}//teleop Periodic

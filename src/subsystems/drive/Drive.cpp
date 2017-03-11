@@ -93,9 +93,8 @@ void Drive::Init (std::shared_ptr<ITable> nt, std::shared_ptr<NetworkTable> pixy
 
 	ReadPIDTable();
 	WritePIDTable();
-	drive.SetMaxOutput(1);
-//	drive.SetMaxOutput(650);
-
+//	drive.SetMaxOutput(1);
+	drive.SetMaxOutput(650);
 
 }
 void Drive::AutonomousInit(){
@@ -234,14 +233,14 @@ void Drive::Update (Joystick &xbox){
 
 	if (driveEnabled){
 		if (autoAim.State()){
-			drive.ArcadeDrive(moveDeadband.OutputFor(rev*xbox.GetRawAxis(XBox::LY)),
-							turnDeadband.OutputFor(xbox.GetRawAxis(XBox::LX)));
-		} else {
 			if (!autoAim.PrevState())
 				*izone = 0;
 
 			drive.ArcadeDrive(moveDeadband.OutputFor(rev*xbox.GetRawAxis(XBox::LY)),
 							autoAdjustmentValue);
+		} else {
+			drive.ArcadeDrive(moveDeadband.OutputFor(rev*xbox.GetRawAxis(XBox::LY)),
+							turnDeadband.OutputFor(xbox.GetRawAxis(XBox::LX)));
 		}
 	}
 

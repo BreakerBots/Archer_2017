@@ -11,7 +11,7 @@
 
 Wings::Wings ():
 	wingsEnabled(true),
-	button(XBox::X)
+	button(XBox::X,true)
 {
 	leftWing = new DoubleSolenoid(PCM_ID,6,7);
 	leftForward = true;
@@ -32,7 +32,7 @@ Wings::Wings (int triggerNum):
 	rightWing = new DoubleSolenoid(PCM_ID,6,7);
 	rightForward = false;
 
-	button = ToggleButton(triggerNum);
+	button = ToggleButton(triggerNum,true);
 }//Wings constructor
 
 void Wings::Init(std::shared_ptr<ITable> nt){

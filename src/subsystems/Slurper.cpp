@@ -19,7 +19,7 @@ Slurper::Slurper ():
 	enableButton(Buttons::kForwardToggle),
 	effort(0)
 {
-	intakeEffort = 0.7;
+	intakeEffort = -0.7;
 }//Default Constructor
 
 Slurper::Slurper (float forwardEffort):
