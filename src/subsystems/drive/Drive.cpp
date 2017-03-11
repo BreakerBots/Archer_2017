@@ -239,8 +239,11 @@ void Drive::Update (Joystick &xbox){
 			drive.ArcadeDrive(moveDeadband.OutputFor(rev*xbox.GetRawAxis(XBox::LY)),
 							autoAdjustmentValue);
 		} else {
-			drive.ArcadeDrive(moveDeadband.OutputFor(rev*xbox.GetRawAxis(XBox::LY)),
-							turnDeadband.OutputFor(xbox.GetRawAxis(XBox::LX)));
+//			drive.ArcadeDrive(moveDeadband.OutputFor(rev*xbox.GetRawAxis(XBox::LY)),
+//							turnDeadband.OutputFor(xbox.GetRawAxis(XBox::LX)));
+			drive.ArcadeDrive(rev*xbox.GetRawAxis(XBox::LY), xbox.GetRawAxis(XBox::LX));
+			driveTable->PutNumber("Adjusted_X",turnDeadband.OutputFor(xbox.GetRawAxis(XBox::LX)));
+			driveTable->PutNumber("Adjusted_Y",moveDeadband.OutputFor(xbox.GetRawAxis(XBox::LY)));
 		}
 	}
 

@@ -43,7 +43,7 @@ void Wings::Update(Joystick &xbox){
 	button.Update(xbox);
 
 	if (wingsEnabled){
-		if (button.State()){
+		if (!button.State()){
 			leftWing->Set(DoubleSolenoid::kForward);
 			rightWing->Set(DoubleSolenoid::kForward);
 		} else {
@@ -94,7 +94,7 @@ bool Wings::AreClosed(){
 void Wings::PostValues(){
 	wingsTable->PutNumber("PCM_ID",PCM_ID);
 
-	wingsTable->PutString("State",(button.State()?"OPEN":"CLOSED"));
+	wingsTable->PutString("State",(button.State()?"CLOSED":"OPEN"));
 	wingsTable->PutNumber("Debug/LeftWing",leftWing->Get());
 	wingsTable->PutNumber("Debug/RightWing",rightWing->Get());
 }//PostValues method
