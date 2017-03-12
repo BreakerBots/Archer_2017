@@ -93,8 +93,8 @@ void Drive::Init (std::shared_ptr<ITable> nt, std::shared_ptr<NetworkTable> pixy
 
 	ReadPIDTable();
 	WritePIDTable();
-//	drive.SetMaxOutput(1);
-	drive.SetMaxOutput(650);
+	drive.SetMaxOutput(1);
+//	drive.SetMaxOutput(650);
 
 }
 void Drive::AutonomousInit(){
@@ -124,14 +124,14 @@ void Drive::Autonomous(AutonomousMode autonomousMode/* Why would we need a joyst
 	case kGear1:
 
 		advanceInches = -(112-30);
-		if (right1.GetEncPosition() - left1.GetEncPosition() > -10000){
+		if (right1.GetEncPosition() + left1.GetEncPosition() > -10000){
 			drive.ArcadeDrive(0.5,0);
 			*izone = 0;
-		} else if (right1.GetEncPosition() - left1.GetEncPosition() > -50000){
+		} else if (right1.GetEncPosition() + left1.GetEncPosition() > -50000){
 			drive.ArcadeDrive(0.5,autoAdjustmentValue);
 		} else {
 			drive.ArcadeDrive(0.0,0.0);
-//			printf("Count: %d\n",count);
+			printf("Done\n");
 		}
 		break;
 	case kGear2:
@@ -239,11 +239,11 @@ void Drive::Update (Joystick &xbox){
 			drive.ArcadeDrive(moveDeadband.OutputFor(rev*xbox.GetRawAxis(XBox::LY)),
 							autoAdjustmentValue);
 		} else {
-//			drive.ArcadeDrive(moveDeadband.OutputFor(rev*xbox.GetRawAxis(XBox::LY)),
-//							turnDeadband.OutputFor(xbox.GetRawAxis(XBox::LX)));
-			drive.ArcadeDrive(rev*xbox.GetRawAxis(XBox::LY), xbox.GetRawAxis(XBox::LX));
-			driveTable->PutNumber("Adjusted_X",turnDeadband.OutputFor(xbox.GetRawAxis(XBox::LX)));
-			driveTable->PutNumber("Adjusted_Y",moveDeadband.OutputFor(xbox.GetRawAxis(XBox::LY)));
+			drive.ArcadeDrive(moveDeadband.OutputFor(rev*xbox.GetRawAxis(XBox::LY)),
+							turnDeadband.OutputFor(xbox.GetRawAxis(XBox::LX)));
+//			drive.ArcadeDrive(rev*xbox.GetRawAxis(XBox::LY), xbox.GetRawAxis(XBox::LX));
+//			driveTable->PutNumber("Adjusted_X",turnDeadband.OutputFor(xbox.GetRawAxis(XBox::LX)));
+//			driveTable->PutNumber("Adjusted_Y",moveDeadband.OutputFor(xbox.GetRawAxis(XBox::LY)));
 		}
 	}
 

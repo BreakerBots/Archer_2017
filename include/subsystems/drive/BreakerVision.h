@@ -55,9 +55,11 @@ private:
 	void EliminateMalformedObjects (std::vector<PixyObjectData> &objects);
 	void EliminateMisproportionedObjects (std::vector<PixyObjectData> &objects);
 	void EliminateHighObjects(std::vector<PixyObjectData> &objects);
+	std::vector<PixyObjectData> FindMiddleTwo (std::vector<PixyObjectData> objects);
 
 	int GetTargetError(std::vector<PixyObjectData> &objects);
 
+	void PostObjectsToOutgoing (std::vector<PixyObjectData> objects);
 	void ValueChanged (ITable *source, llvm::StringRef key, std::shared_ptr< nt::Value > value, bool isNew);
 
 };//Vision class
