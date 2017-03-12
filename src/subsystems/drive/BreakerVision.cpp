@@ -89,15 +89,10 @@ void BreakerVision::Update(){
 	FindTape(objects);
 
 	objects = FindMiddleTwo(objects);
-//	new_error = GetTargetError(objects);
-
 
 
 	PostObjectsToOutgoing (objects);
 	error = GetTargetError(objects);
-
-//	lowpass_error =
-
 
 	pixyTable->PutNumber("TargetData/error",error);
 
