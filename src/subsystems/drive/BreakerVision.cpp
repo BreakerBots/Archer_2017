@@ -88,8 +88,9 @@ void BreakerVision::Update(){
 
 	FindTape(objects);
 
-	objects = FindMiddleTwo(objects);
 
+	if (target_distance_closer == 26)
+		objects = FindMiddleTwo(objects);
 
 	PostObjectsToOutgoing (objects);
 	error = GetTargetError(objects);

@@ -121,6 +121,18 @@ void Drive::Autonomous(AutonomousMode autonomousMode/* Why would we need a joyst
 	case kDefault:
 		printf("Default Autonomous Mode\n");
 		break;
+	case kBaseline:
+		advanceInches = -(112-30);
+		if (right1.GetEncPosition() + left1.GetEncPosition() > -10000){
+			drive.ArcadeDrive(0.5,0);
+			*izone = 0;
+		} else if (right1.GetEncPosition() + left1.GetEncPosition() > -50000){
+			drive.ArcadeDrive(0.5,0);
+		} else {
+			drive.ArcadeDrive(0.0,0.0);
+			printf("Done\n");
+		}
+		break;
 	case kGear1:
 
 		advanceInches = -(112-30);

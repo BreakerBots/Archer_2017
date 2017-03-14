@@ -21,7 +21,7 @@ class Drive : public PIDOutput
 {
 public:
 	enum AutonomousMode {
-			kDefault, kGear1, kGear2, kGear3
+			kDefault, kGear1, kGear2, kGear3, kBaseline
 		};
 	enum AutoState {
 			kHook, kStraight, kTurn, kWait, kClose, kFinal, kDone
