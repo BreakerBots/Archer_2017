@@ -9,7 +9,8 @@
 #define SRC_TOGGLEBUTTON_H_
 
 #include "WPILib.h"
-#include "XBox.h"
+
+#include "general/XBox.h"
 
 class ToggleButton {
 private:

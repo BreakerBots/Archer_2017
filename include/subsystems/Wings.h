@@ -3,7 +3,8 @@
 #define WING_H
 
 #include "WPILib.h"
-#include "ToggleButton.h"
+
+#include "general/ToggleButton.h"
 
 class Wings {
 
@@ -49,7 +50,7 @@ public:
 	Wings (int trigger);
 
 	void Init (std::shared_ptr<ITable> nt);
-	void Update(const Joystick& xbox);
+	void Update(Joystick &xbox);
 
 	void SetLeftForward(bool newLeftForward);
 	bool GetLeftForward();

@@ -5,13 +5,13 @@
  *      Author: DS_2016
  */
 
-#include "XBox.h"
-#include "Wings.h"
-#include "ToggleButton.h"
+#include "general/XBox.h"
+#include "subsystems/Wings.h"
+#include "general/ToggleButton.h"
 
 Wings::Wings ():
 	wingsEnabled(true),
-	button(XBox::X)
+	button(XBox::X,true)
 {
 	leftWing = new DoubleSolenoid(PCM_ID,6,7);
 	leftForward = true;
@@ -32,18 +32,18 @@ Wings::Wings (int triggerNum):
 	rightWing = new DoubleSolenoid(PCM_ID,6,7);
 	rightForward = false;
 
-	button = ToggleButton(triggerNum);
+	button = ToggleButton(triggerNum,true);
 }//Wings constructor
 
 void Wings::Init(std::shared_ptr<ITable> nt){
 	wingsTable = nt;
 }
 
-void Wings::Update(const Joystick& xbox){
+void Wings::Update(Joystick &xbox){
 	button.Update(xbox);
 
 	if (wingsEnabled){
-		if (button.State()){
+		if (!button.State()){
 			leftWing->Set(DoubleSolenoid::kForward);
 			rightWing->Set(DoubleSolenoid::kForward);
 		} else {
@@ -94,7 +94,7 @@ bool Wings::AreClosed(){
 void Wings::PostValues(){
 	wingsTable->PutNumber("PCM_ID",PCM_ID);
 
-	wingsTable->PutString("State",(button.State()?"OPEN":"CLOSED"));
+	wingsTable->PutString("State",(button.State()?"CLOSED":"OPEN"));
 	wingsTable->PutNumber("Debug/LeftWing",leftWing->Get());
 	wingsTable->PutNumber("Debug/RightWing",rightWing->Get());
 }//PostValues method

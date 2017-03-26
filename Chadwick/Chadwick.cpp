@@ -3,12 +3,13 @@
 
 #include <algorithm>
 
-#include "Talons.h"
-#include "Wings.h"
-#include "XBox.h"
-#include "ToggleButton.h"
-#include "BreakerVision.h"
-#include "Drive.h"
+#include "general/XBox.h"
+#include "general/Talons.h"
+#include "general/ToggleButton.h"
+
+#include "subsystems/drive/BreakerVision.h"
+#include "subsystems/drive/Drive.h"
+#include "subsystems/Wings.h"
 
 
 class Chadwick: public IterativeRobot {
@@ -19,10 +20,12 @@ private:
 	std::shared_ptr<NetworkTable> subsystems;
 	std::shared_ptr<NetworkTable> pixy;
 
-	BreakerVision aiming;
-	Drive drive;
+
 	PIDController gearPlacer;
 	float gearPlacerIZone;
+
+	BreakerVision aiming;
+	Drive drive;
 	Drive::AutonomousMode autonomousMode;
 
 	Wings wings;
@@ -38,10 +41,11 @@ public:
 	Chadwick():
 		xbox(0),
 
-		aiming(),
-		drive(),
 		gearPlacer(0.025,0.0002,0,&aiming,&drive),
 		gearPlacerIZone(100),
+
+		aiming(),
+		drive(&gearPlacer.m_totalError),
 		autonomousMode(Drive::kGear3),
 
 		wings(),
@@ -103,7 +107,7 @@ private:
 		//Called PERIODICALLY during the Auto period
 
 		aiming.Update();
-		drive.Autonomous(autonomousMode,&gearPlacer.m_totalError);
+		drive.Autonomous(autonomousMode);
 
 		//Update PID loop
 		//PIDController gearPlacer will automatically read error from aiming,

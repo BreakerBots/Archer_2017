@@ -18,6 +18,7 @@ public:
 		// 0   1   2   3   4   5
 		LX=0, LY, LT, RT, RX, RY
 	};
+
 };
 
 #endif /* SRC_XBOX_H_ */

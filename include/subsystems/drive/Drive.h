@@ -11,23 +11,32 @@
 #include "WPILib.h"
 #include "CANTalon.h"
 
-#include "Talons.h"
-#include "Deadband.h"
-#include "ToggleButton.h"
-#include "TalonEncoder.h"
+#include "general/XBox.h"
+#include "general/Talons.h"
+#include "general/Deadband.h"
+#include "general/ToggleButton.h"
+#include "general/HoldButton.h"
 
 class Drive : public PIDOutput
 {
 public:
 	enum AutonomousMode {
-			kDefault, kGear1, kGear2, kGear3
+			kDefault, kGear1, kGear2, kGear3, kBaseline
 		};
 	enum AutoState {
 			kHook, kStraight, kTurn, kWait, kClose, kFinal, kDone
 		};
 
-private:
+	enum Buttons {
+		kGearToggle = XBox::A,
+		kDirectionToggle = XBox::LB,
+		//As the hold button is triggered by an axis,
+		//the set value is an illegal button number.
+		kAimingHoldNull = -1,
+		kAimingTrigger = XBox::RT
+	};
 
+private:
 
 		//NetworkTable @ SmartDashboard/Subsystems/Drive
 	std::shared_ptr<ITable> driveTable;
@@ -61,23 +70,22 @@ private:
 
 		//Autonomous Control Settings
 			//Controlled by user or autonomous
-	bool teleop;
+	double *izone;//Used by aiming->drive PID controller
+	HoldButton autoAim;
 			//TurnVal output by the PIDController
 	float autoAdjustmentValue;
-	float autoTargetRight;
-	float autoTargetLeft;
 
 	AutoState autoState;
 	Timer autoTimer;
 
 public:
 
-	Drive ();
+	Drive (double *izone);
 
 	void Init (std::shared_ptr<ITable> nt, std::shared_ptr<NetworkTable> pixyNt);
 	void AutonomousInit();
-	void Autonomous (AutonomousMode mode, double *izone);
-	void Update (const Joystick& xbox);
+	void Autonomous (AutonomousMode mode);
+	void Update (Joystick &xbox);
 
 	bool Teleop();
 	void ForceTeleop();
