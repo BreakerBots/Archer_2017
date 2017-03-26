@@ -1,5 +1,7 @@
 //import networktables.NetworkTable;
 
+import edu.wpi.first.wpilibj.networktables.*;
+
 import java.util.List;
 import java.util.ArrayList;
 
