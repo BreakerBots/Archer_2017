@@ -20,6 +20,7 @@ private:
 	std::shared_ptr<NetworkTable> subsystems;
 	std::shared_ptr<NetworkTable> pixy;
 
+
 	PIDController gearPlacer;
 	float gearPlacerIZone;
 
