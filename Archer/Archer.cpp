@@ -34,6 +34,8 @@ private:
 
 	Drive drive;
 	Drive::AutonomousMode autonomousMode;
+	ADXRS450_Gyro gyro;
+	PIDController gyroPID;
 
 	Wings wings;
 	Slurper slurper;
@@ -53,6 +55,9 @@ public:
 
 		drive(&gearPlacer.m_totalError),
 		autonomousMode(Drive::kGear3),
+
+		gyro(SPI::kOnboardCS0),
+		gyroPID(0.1,0,0,&gyro, &drive),
 
 		wings (),
 		slurper (),
@@ -85,7 +90,11 @@ private:
 		wings.Close();
 
 		//Begin the feed from aiming to drive
-		gearPlacer.Enable();
+		printf("Aiming->Drive PIDController Not Enabled\n");
+//		gearPlacer.Enable();
+
+		gyroPID.Enable();
+
 		//Different than previous PID systems where the setpoint
 		//changes in a stable environment, here, the setpoint is
 		//always 0, and BreakerVision returns the error off of that

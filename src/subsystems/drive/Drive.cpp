@@ -63,7 +63,6 @@ Drive::Drive (double *izoneFromGearPlacer):
 	left3.SetControlMode(CANTalon::kFollower);
 	left3.Set(Talons::L1);
 
-
 	//----------Set up Encoders------------//
 		//Note: SetPID is not ambiguous ... stupid Eclipse
 //	right1.SetControlMode(CANTalon::kSpeed);
@@ -236,7 +235,7 @@ void Drive::Update (Joystick &xbox){
 	else
 		autoAim.SetState(false);
 
-
+	printf("Adjust: %f\n",autoAdjustmentValue);
 	ReadPIDTable();
 
 	int rev = 1;
