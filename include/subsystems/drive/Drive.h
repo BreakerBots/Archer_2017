@@ -21,7 +21,7 @@ class Drive : public PIDOutput
 {
 public:
 	enum AutonomousMode {
-			kDefault, kGear1, kGear2, kGear3, kBaseline
+			kDefault, kGear1, kGear2, kGear3, kBaseline, kGyroStraight
 		};
 	enum AutoState {
 			kHook, kStraight, kTurn, kWait, kClose, kFinal, kDone
@@ -46,8 +46,7 @@ private:
 	bool gearsEnabled;
 
 		//Solenoids allow shifts between high and low gears
-	DoubleSolenoid* leftGear;
-	DoubleSolenoid* rightGear;
+	DoubleSolenoid* gears;
 	ToggleButton gearButton;
 
 		//3-talon drive for the right side
@@ -66,6 +65,8 @@ private:
 
 		//Deadband Functions
 	Deadband moveDeadband;
+	double maxTurnHighGear;
+	double maxTurnLowGear;
 	Deadband turnDeadband;
 
 		//Autonomous Control Settings

@@ -94,7 +94,7 @@ private:
 //		gearPlacer.Enable();
 
 		gyroPID.Enable();
-
+		gyroPID.InitTable(subsystems->GetSubTable("Drive")->GetSubTable("Gyro"));
 		//Different than previous PID systems where the setpoint
 		//changes in a stable environment, here, the setpoint is
 		//always 0, and BreakerVision returns the error off of that
@@ -115,6 +115,8 @@ private:
 		drive.AutonomousInit();
 //		autonomousMode = Drive::AutonomousMode::kGear1;
 		autonomousMode = (Drive::AutonomousMode) (int) subsystems->GetSubTable("Drive")->GetNumber("AutonomousMode",0);
+		gyroPID.SetSetpoint(0);
+		gyroPID.m_totalError = 0;//Clear Accumulated Error
 
 		printf("End of Autonomous init\n");
 
@@ -171,6 +173,7 @@ private:
 		aiming.Update();
 		drive.Update(xbox);
 
+		printf("Angle: %.2f\n",gyro.GetAngle());
 		//Update PID loop
 		//PIDController gearPlacer will automatically read error from aiming,
 		//calculate controlEffort, and output that value to the drive system.

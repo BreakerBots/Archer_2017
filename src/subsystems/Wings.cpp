@@ -13,26 +13,16 @@ Wings::Wings ():
 	wingsEnabled(true),
 	button(XBox::X,true)
 {
-	leftWing = new DoubleSolenoid(PCM_ID,6,7);
-	leftForward = true;
-
-	rightWing = new DoubleSolenoid(PCM_ID,2,3);
-	rightForward = false;
+	cylinder = new DoubleSolenoid(PCM_ID,2,3);
 
 }//Wings constructor
 
 Wings::Wings (int triggerNum):
 	wingsEnabled(true),
-	button(XBox::X)
+	button(triggerNum, true)
 {
+	cylinder = new DoubleSolenoid(PCM_ID,2,3);
 
-	leftWing = new DoubleSolenoid(PCM_ID,4,5);
-	leftForward = true;
-
-	rightWing = new DoubleSolenoid(PCM_ID,6,7);
-	rightForward = false;
-
-	button = ToggleButton(triggerNum,true);
 }//Wings constructor
 
 void Wings::Init(std::shared_ptr<ITable> nt){
@@ -44,28 +34,13 @@ void Wings::Update(Joystick &xbox){
 
 	if (wingsEnabled){
 		if (!button.State()){
-			leftWing->Set(DoubleSolenoid::kForward);
-			rightWing->Set(DoubleSolenoid::kForward);
+			cylinder->Set(DoubleSolenoid::kForward);
 		} else {
-			leftWing->Set(DoubleSolenoid::kReverse);
-			rightWing->Set(DoubleSolenoid::kReverse);
+			cylinder->Set(DoubleSolenoid::kReverse);
 		}
 	}
 	PostValues();
 }//Update Method
-
-void Wings::SetLeftForward(bool newLeftForward){
-	leftForward = newLeftForward;
-}
-bool Wings::GetLeftForward(){
-	return leftForward;
-}
-void Wings::SetRightForward(bool newRightForward){
-	rightForward = newRightForward;
-}
-bool Wings::GetRightForward(){
-	return rightForward;
-}
 
 void Wings::SetTriggerButton(int newButton){
 	button.ChangeTrigger(newButton);
@@ -95,7 +70,6 @@ void Wings::PostValues(){
 	wingsTable->PutNumber("PCM_ID",PCM_ID);
 
 	wingsTable->PutString("State",(button.State()?"CLOSED":"OPEN"));
-	wingsTable->PutNumber("Debug/LeftWing",leftWing->Get());
-	wingsTable->PutNumber("Debug/RightWing",rightWing->Get());
+	wingsTable->PutNumber("Debug/CylinderState",cylinder->Get());
 }//PostValues method
 
