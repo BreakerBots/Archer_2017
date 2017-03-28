@@ -57,7 +57,7 @@ public:
 		autonomousMode(Drive::kGear3),
 
 		gyro(SPI::kOnboardCS0),
-		gyroPID(0.1,0,0,&gyro, &drive),
+		gyroPID(0.4,0.04,0,&gyro, &drive),
 
 		wings (),
 		slurper (),
@@ -115,6 +115,7 @@ private:
 		drive.AutonomousInit();
 //		autonomousMode = Drive::AutonomousMode::kGear1;
 		autonomousMode = (Drive::AutonomousMode) (int) subsystems->GetSubTable("Drive")->GetNumber("AutonomousMode",0);
+		gyro.Reset();
 		gyroPID.SetSetpoint(0);
 		gyroPID.m_totalError = 0;//Clear Accumulated Error
 
