@@ -128,13 +128,25 @@ private:
 
 
 	void UpdateLidar3(){
+		static int count255 = 0;
 
 		i2c.Read(0x63, 2, distArray);
 		int temp = ((distArray[0] << 8) + distArray[1]);
-		if (temp != 255) distance = temp;
-		printf("Distance: %dcm\n", distance);
-//		Wait(0.5);
-	}
+
+		if (temp != 255) {
+			distance = temp;
+			count255 = 0;
+		} else {
+			count255 += 1;
+		}
+
+		printf("Distance: %dcm", distance);
+		if (temp == 255) printf("  %d",count255);
+		printf("\n");
+
+		Wait(0.3);
+
+	}//Update Lidar 3
 
 
 	void UpdateLidar(){
