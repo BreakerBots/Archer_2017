@@ -72,6 +72,8 @@ public:
 		pixy = NetworkTable::GetTable("GearPixy");
 		subsystems = NetworkTable::GetTable("Subsystems");
 
+		gyroPID.Enable();
+		gyroPID.InitTable(subsystems->GetSubTable("Drive")->GetSubTable("Gyro"));
 	}//Robot Constructor
 
 private:
@@ -93,8 +95,6 @@ private:
 		printf("Aiming->Drive PIDController Not Enabled\n");
 //		gearPlacer.Enable();
 
-		gyroPID.Enable();
-		gyroPID.InitTable(subsystems->GetSubTable("Drive")->GetSubTable("Gyro"));
 		//Different than previous PID systems where the setpoint
 		//changes in a stable environment, here, the setpoint is
 		//always 0, and BreakerVision returns the error off of that
