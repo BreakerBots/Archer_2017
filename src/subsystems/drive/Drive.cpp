@@ -49,8 +49,7 @@ Drive::Drive (double *izoneFromGearPlacer):
 	autoState(Drive::AutoState::kStraight),
 	autoTimer()
 {
-	rightGear = new DoubleSolenoid(50,0,1);
-	leftGear = new DoubleSolenoid(50,4,5);
+	gears = new DoubleSolenoid(50,0,1);
 
 	//----------Talon Management-----------//
 	right2.SetControlMode(CANTalon::kFollower);
@@ -263,11 +262,9 @@ void Drive::Update (Joystick &xbox){
 	gearButton.Update(xbox);
 	if (gearsEnabled){
 		if (gearButton.State()){
-			leftGear->Set(DoubleSolenoid::kForward);
-			rightGear->Set(DoubleSolenoid::kForward);
+			gears->Set(DoubleSolenoid::kForward);
 		} else {
-			leftGear->Set(DoubleSolenoid::kReverse);
-			rightGear->Set(DoubleSolenoid::kReverse);
+			gears->Set(DoubleSolenoid::kReverse);
 		}
 	}
 	PostValues();
@@ -393,7 +390,6 @@ void Drive::PostValues (){
 	driveTable->PutNumber("Debug/5.LeftEncPos",left1.GetEncPosition());
 	driveTable->PutNumber("Debug/6.RightEncPos",right1.GetEncPosition());
 
-	driveTable->PutNumber("Debug/7.LeftGear",leftGear->Get());
-	driveTable->PutNumber("Debug/8.RightGear",rightGear->Get());
+	driveTable->PutNumber("Debug/8.Gears",gears->Get());
 
 }

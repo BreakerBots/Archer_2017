@@ -46,8 +46,7 @@ private:
 	bool gearsEnabled;
 
 		//Solenoids allow shifts between high and low gears
-	DoubleSolenoid* leftGear;
-	DoubleSolenoid* rightGear;
+	DoubleSolenoid* gears;
 	ToggleButton gearButton;
 
 		//3-talon drive for the right side

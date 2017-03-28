@@ -35,13 +35,8 @@ private:
 
 	const int PCM_ID = 50;
 
-	DoubleSolenoid* leftWing;
-	bool leftForward;
-	//leftBack = !leftForward
+	DoubleSolenoid* cylinder;
 
-	DoubleSolenoid* rightWing;
-	bool rightForward;
-	//rightBack = !rightForward
 	ToggleButton button;
 
 public:
@@ -51,11 +46,6 @@ public:
 
 	void Init (std::shared_ptr<ITable> nt);
 	void Update(Joystick &xbox);
-
-	void SetLeftForward(bool newLeftForward);
-	bool GetLeftForward();
-	void SetRightForward(bool newRightForward);
-	bool GetRightForward();
 
 	void SetTriggerButton(int button);
 	int GetTriggerButton();
