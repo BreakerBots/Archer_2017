@@ -65,6 +65,8 @@ private:
 
 		//Deadband Functions
 	Deadband moveDeadband;
+	double maxTurnHighGear;
+	double maxTurnLowGear;
 	Deadband turnDeadband;
 
 		//Autonomous Control Settings

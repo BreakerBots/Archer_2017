@@ -40,6 +40,8 @@ Drive::Drive (double *izoneFromGearPlacer):
 	drive (left1, right1),
 
 	moveDeadband(0.1),
+	maxTurnHighGear(1),
+	maxTurnLowGear(0.7),
 	turnDeadband(0.2),
 
 	izone(izoneFromGearPlacer),
@@ -235,7 +237,6 @@ void Drive::Update (Joystick &xbox){
 	else
 		autoAim.SetState(false);
 
-
 	ReadPIDTable();
 
 	int rev = 1;
@@ -263,8 +264,14 @@ void Drive::Update (Joystick &xbox){
 	if (gearsEnabled){
 		if (gearButton.State()){
 			gears->Set(DoubleSolenoid::kForward);
+			if (!gearButton.PrevState()){
+				turnDeadband.SetMaxY(maxTurnHighGear);
+			}
 		} else {
 			gears->Set(DoubleSolenoid::kReverse);
+			if (gearButton.PrevState()){
+				turnDeadband.SetMaxY(maxTurnLowGear);
+			}
 		}
 	}
 	PostValues();
@@ -381,15 +388,18 @@ void Drive::PostValues (){
 	driveTable->PutString("6.Driving Gear",(gearButton.State()?"HIGH GEAR":"LOW GEAR"));
 
 	//Debug Values: Troubleshoot discrepancy with above values
-	driveTable->PutNumber("Debug/1.LeftEffort",left1.Get());
-	driveTable->PutNumber("Debug/2.RightEffort",right1.Get());
+	driveTable->PutNumber("Debug/0.LeftEffort",left1.Get());
+	driveTable->PutNumber("Debug/1.RightEffort",right1.Get());
 
-	driveTable->PutNumber("Debug/3.LeftEncVel",left1.GetEncVel());
-	driveTable->PutNumber("Debug/4.RightEncVel",right1.GetEncVel());
+	driveTable->PutNumber("Debug/2.LeftEncVel",left1.GetEncVel());
+	driveTable->PutNumber("Debug/3.RightEncVel",right1.GetEncVel());
 
-	driveTable->PutNumber("Debug/5.LeftEncPos",left1.GetEncPosition());
-	driveTable->PutNumber("Debug/6.RightEncPos",right1.GetEncPosition());
+	driveTable->PutNumber("Debug/4.LeftEncPos",left1.GetEncPosition());
+	driveTable->PutNumber("Debug/5.RightEncPos",right1.GetEncPosition());
 
-	driveTable->PutNumber("Debug/8.Gears",gears->Get());
+	driveTable->PutNumber("Debug/6.Gears",gears->Get());
+
+	driveTable->PutNumber("Debug/7.MaxSpeedHighGear", maxTurnHighGear);
+	driveTable->PutNumber("Debug/8.MaxSpeedLowGear", maxTurnLowGear);
 
 }
