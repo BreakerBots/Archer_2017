@@ -25,6 +25,7 @@ Drive::Drive (double *izoneFromGearPlacer):
 	driveEnabled(true),
 	gearsEnabled(true),
 
+	pusherButton(Buttons::kPusherToggle),
 	gearButton(Buttons::kGearToggle),
 
 	right1(Talons::R1),
@@ -51,6 +52,7 @@ Drive::Drive (double *izoneFromGearPlacer):
 	autoState(Drive::AutoState::kStraight),
 	autoTimer()
 {
+	pusher = new DoubleSolenoid(50,4,5);
 	gears = new DoubleSolenoid(50,0,1);
 
 	//----------Talon Management-----------//
@@ -63,6 +65,8 @@ Drive::Drive (double *izoneFromGearPlacer):
 	left2.Set(Talons::L1);
 	left3.SetControlMode(CANTalon::kFollower);
 	left3.Set(Talons::L1);
+
+	autoTimer.Reset();
 
 	//----------Set up Encoders------------//
 		//Note: SetPID is not ambiguous ... stupid Eclipse
@@ -94,10 +98,12 @@ void Drive::Init (std::shared_ptr<ITable> nt, std::shared_ptr<NetworkTable> pixy
 	ReadPIDTable();
 	WritePIDTable();
 	drive.SetMaxOutput(1);
+
+	autoTimer.Start();
 //	drive.SetMaxOutput(650);
 
 }
-void Drive::AutonomousInit(){
+void Drive::AutonomousInit(AutonomousMode mode){
 
 //	right1.ConfigPeakOutputVoltage(6,-6);
 //	right1.SetVoltageRampRate(12);//Volts per second
@@ -109,6 +115,14 @@ void Drive::AutonomousInit(){
 
 	autoState = AutoState::kHook;
 
+	pusher->Set(DoubleSolenoid::kReverse);
+
+	if (mode == AutonomousMode::kGyroStraight){
+		autoState = AutoState::kForward;
+
+		autoTimer.Reset();
+		autoTimer.Start();
+	}
 
 }
 void Drive::Autonomous(AutonomousMode autonomousMode/* Why would we need a joystick?*/){
@@ -119,7 +133,8 @@ void Drive::Autonomous(AutonomousMode autonomousMode/* Why would we need a joyst
 
 	switch (autonomousMode){
 	case kDefault:
-		printf("Default Autonomous Mode\n");
+//		printf("Default Autonomous Mode\n");
+		drive.ArcadeDrive(0.0,0);
 		break;
 	case kBaseline:
 		advanceInches = -(112-30);
@@ -220,10 +235,53 @@ void Drive::Autonomous(AutonomousMode autonomousMode/* Why would we need a joyst
 		case kDone:
 			drive.ArcadeDrive(0.0,0);
 			break;
+		default:
+			printf("Unknown state\n");
+			break;
 		}//autoState switch
 		break;
 	case kGyroStraight:
-		drive.ArcadeDrive(0.5, autoAdjustmentValue);
+
+		switch (autoState){
+		case kForward:
+			drive.ArcadeDrive(0.5, autoAdjustmentValue);
+
+//			if (right1.GetEncPosition() < -60*1000/3.32){
+			if (Delay(3)){
+				autoState = kDeposit;
+				driveTable->PutNumber("autoState",autoState);
+
+				autoTimer.Reset();
+				autoTimer.Start();
+			}
+			break;
+		case kDeposit:
+			drive.ArcadeDrive(0.0,0);
+
+			pusher->Set(DoubleSolenoid::kForward);
+
+			if (Delay(1)){
+				autoState = kReverse;
+			}
+			break;
+		case kReverse:
+			drive.ArcadeDrive(-0.5,0);
+
+//			if (right1.GetEncPosition() > -30*1000/3.32){
+			if (Delay (1)){
+				autoState = kDone;
+			}
+			break;
+		case kDone:
+			drive.ArcadeDrive(0.0,0);
+
+			pusher->Set(DoubleSolenoid::kReverse);
+			break;
+		default:
+			printf("Unknown Auto State!!\n");
+			break;
+		}
+
 		break;
 	default:
 		printf("Unknown autonomous mode\n");
@@ -260,6 +318,16 @@ void Drive::Update (Joystick &xbox){
 //			driveTable->PutNumber("Adjusted_X",turnDeadband.OutputFor(xbox.GetRawAxis(XBox::LX)));
 //			driveTable->PutNumber("Adjusted_Y",moveDeadband.OutputFor(xbox.GetRawAxis(XBox::LY)));
 		}
+	}
+
+	//---------PUSHER------------//
+	pusherButton.Update(xbox);
+	if (pusherButton.State()){
+		if (!pusherButton.PrevState())
+			pusher->Set(DoubleSolenoid::kForward);
+	} else {
+		if (pusherButton.PrevState())
+			pusher->Set(DoubleSolenoid::kReverse);
 	}
 
 	//------------GEARS----------//
@@ -383,6 +451,9 @@ void Drive::WritePIDTable (){
 void Drive::PostValues (){
 	//Post Values to the SmartDashboard/Subsystems/Drive network table
 
+	if (!driveTable->ContainsKey("AutonomousMode"))
+		driveTable->PutNumber("AutonomousMode",0);
+
 	driveTable->PutBoolean("1.Drive Enabled",driveEnabled);
 	driveTable->PutString("2.Drive Direction",(directionButton.State()?"FORWARD":"REVERSE"));
 	driveTable->PutString("3.Control Mode",(autoAim.State()?"AUTONOMOUS":"TELE-OP"));
@@ -404,5 +475,13 @@ void Drive::PostValues (){
 
 	driveTable->PutNumber("Debug/7.MaxSpeedHighGear", maxTurnHighGear);
 	driveTable->PutNumber("Debug/8.MaxSpeedLowGear", maxTurnLowGear);
-
 }
+
+bool Drive::Delay(float delaySeconds){
+	if (autoTimer.Get() > delaySeconds){
+		autoTimer.Reset();
+		autoTimer.Start();
+		return true;
+	}
+	return false;
+}//Delay method

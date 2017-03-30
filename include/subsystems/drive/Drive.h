@@ -25,6 +25,7 @@ public:
 		};
 	enum AutoState {
 			kHook, kStraight, kTurn, kWait, kClose, kFinal, kDone
+			,kForward, kDeposit, kReverse
 		};
 
 	enum Buttons {
@@ -33,7 +34,8 @@ public:
 		//As the hold button is triggered by an axis,
 		//the set value is an illegal button number.
 		kAimingHoldNull = -1,
-		kAimingTrigger = XBox::RT
+		kAimingTrigger = XBox::RT,
+		kPusherToggle = XBox::B
 	};
 
 private:
@@ -44,6 +46,10 @@ private:
 
 	bool driveEnabled;
 	bool gearsEnabled;
+
+		//Gear Push
+	DoubleSolenoid* pusher;
+	ToggleButton pusherButton;
 
 		//Solenoids allow shifts between high and low gears
 	DoubleSolenoid* gears;
@@ -84,7 +90,7 @@ public:
 	Drive (double *izone);
 
 	void Init (std::shared_ptr<ITable> nt, std::shared_ptr<NetworkTable> pixyNt);
-	void AutonomousInit();
+	void AutonomousInit(AutonomousMode mode);
 	void Autonomous (AutonomousMode mode);
 	void Update (Joystick &xbox);
 
@@ -109,6 +115,10 @@ public:
 	void WritePIDTable();
 
 	void PostValues();
+
+private:
+	bool Delay (float delaySeconds);
+
 };
 
 #endif /* SRC_DRIVE_H_ */

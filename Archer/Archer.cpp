@@ -23,6 +23,7 @@
 class Archer: public IterativeRobot {
 
 private:
+
 	Joystick xbox;
 
 	std::shared_ptr<NetworkTable> subsystems;
@@ -57,7 +58,7 @@ public:
 		autonomousMode(Drive::kGear3),
 
 		gyro(SPI::kOnboardCS0),
-		gyroPID(0.4,0.04,0,&gyro, &drive),
+		gyroPID(0.2,0.04,0,&gyro, &drive),
 
 		wings (),
 		slurper (),
@@ -72,14 +73,19 @@ public:
 		pixy = NetworkTable::GetTable("GearPixy");
 		subsystems = NetworkTable::GetTable("Subsystems");
 
-		gyroPID.Enable();
-		gyroPID.InitTable(subsystems->GetSubTable("Drive")->GetSubTable("Gyro"));
 	}//Robot Constructor
 
 private:
 
 	void RobotInit(){
-		CameraServer::GetInstance()->StartAutomaticCapture();
+		printf("RobotInit... ");
+
+		if (subsystems->GetBoolean("cameraEnabled",false))
+			CameraServer::GetInstance()->StartAutomaticCapture();
+
+		Init();
+
+		printf("Done\n");
 	}
 
 	void Init(){
@@ -95,12 +101,16 @@ private:
 		printf("Aiming->Drive PIDController Not Enabled\n");
 //		gearPlacer.Enable();
 
+		gyroPID.Enable();
+		gyroPID.InitTable(subsystems->GetSubTable("Drive")->GetSubTable("Gyro"));
+
 		//Different than previous PID systems where the setpoint
 		//changes in a stable environment, here, the setpoint is
 		//always 0, and BreakerVision returns the error off of that
 		//setpoint
 		gearPlacer.SetSetpoint(0);
 		gearPlacer.InitTable(pixy->GetSubTable("PID"));
+
 
 #ifdef SHOOTER
 		shooter.InitTable(subsystems->GetSubTable("shooter"));
@@ -110,21 +120,22 @@ private:
 
 	void AutonomousInit(){
 		//Called once at the start of each Auto period
-		printf("Autonomous Initialized\n");
-		Init();
-		drive.AutonomousInit();
-//		autonomousMode = Drive::AutonomousMode::kGear1;
+		printf("Autonomous Init... ");
+
 		autonomousMode = (Drive::AutonomousMode) (int) subsystems->GetSubTable("Drive")->GetNumber("AutonomousMode",0);
+		drive.AutonomousInit(autonomousMode);
+
 		gyro.Reset();
 		gyroPID.SetSetpoint(0);
 		gyroPID.m_totalError = 0;//Clear Accumulated Error
 
-		printf("End of Autonomous init\n");
-
-	}//Autonomous Init
+		printf("Done\n");
+	}//AutonomousInit
 
 	void AutonomousPeriodic(){
 		//Called PERIODICALLY during the Auto period
+
+		printf("Angle: %.2f\n",gyro.GetAngle());
 
 		aiming.Update();
 		drive.Autonomous(autonomousMode);
@@ -157,15 +168,14 @@ private:
 	void TeleopInit(){
 		//Called once at the start of each operator period
 		printf("TELEOP Initialized\n");
-		Init();
 
 
 		printf("End of Teleop Init\n");
 
 	}//Teleop Init
 	void DisabledInit(){
-		printf("Disabled TELEOP\n");
-	}
+		printf("Disabled!!!\n");
+	}//DisabledInit
 
 	void TeleopPeriodic(){
 		//Called PERIODICALLY during the operator period

@@ -219,7 +219,7 @@ std::vector<BreakerVision::PixyObjectData> BreakerVision::FindMiddleTwo(std::vec
 int BreakerVision::GetTargetError(std::vector<PixyObjectData> &objects){
 
 	if (objects.size() == 0) {
-		printf("Targetting on 0 objects!\n");
+//		printf("Targetting on 0 objects!\n");
 		pixyTable->PutNumber("TargetData/targetting_number",objects.size());
 		pixyTable->PutNumber("TargetData/measured_distance",200);
 		return error;
@@ -239,7 +239,7 @@ int BreakerVision::GetTargetError(std::vector<PixyObjectData> &objects){
 		sum_height += objects[i][4];
 	}
 
-	printf("Targetting on %d objects!\n",objects.size());
+//	printf("Targetting on %d objects!\n",objects.size());
 	pixyTable->PutNumber("TargetData/targetting_number",objects.size());
 	pixyTable->PutNumber("TargetData/measured_distance",244.462*5/ (sum_height/objects.size()) );
 
