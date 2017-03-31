@@ -52,7 +52,8 @@ private:
 	ToggleButton pusherButton;
 
 		//Solenoids allow shifts between high and low gears
-	DoubleSolenoid* gears;
+	DoubleSolenoid* gearsLeft;
+	DoubleSolenoid* gearsRight;
 	ToggleButton gearButton;
 
 		//3-talon drive for the right side

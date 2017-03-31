@@ -29,7 +29,14 @@ void Wings::Init(std::shared_ptr<ITable> nt){
 	wingsTable = nt;
 }
 
-void Wings::Update(Joystick &xbox){
+void Wings::Update(Joystick &xbox, bool autonomous){
+
+	if (autonomous){
+
+	} else {
+
+	}
+
 	button.Update(xbox);
 
 	if (wingsEnabled){

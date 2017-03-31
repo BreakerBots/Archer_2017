@@ -52,8 +52,13 @@ Drive::Drive (double *izoneFromGearPlacer):
 	autoState(Drive::AutoState::kStraight),
 	autoTimer()
 {
-	pusher = new DoubleSolenoid(50,4,5);
-	gears = new DoubleSolenoid(50,0,1);
+	//Start in reverse
+	directionButton.Override(!directionButton.State());
+
+	pusher = new DoubleSolenoid(50,6,7);
+	gearsLeft = new DoubleSolenoid(50,0,1);
+	gearsRight = new DoubleSolenoid(50,4,5);
+
 
 	//----------Talon Management-----------//
 	right2.SetControlMode(CANTalon::kFollower);
@@ -246,8 +251,8 @@ void Drive::Autonomous(AutonomousMode autonomousMode/* Why would we need a joyst
 		case kForward:
 			drive.ArcadeDrive(0.5, autoAdjustmentValue);
 
-//			if (right1.GetEncPosition() < -60*1000/3.32){
-			if (Delay(3)){
+//			if (Delay(3)){
+			if (right1.GetEncPosition() < -60*1000/3.32){
 				autoState = kDeposit;
 				driveTable->PutNumber("autoState",autoState);
 
@@ -267,8 +272,8 @@ void Drive::Autonomous(AutonomousMode autonomousMode/* Why would we need a joyst
 		case kReverse:
 			drive.ArcadeDrive(-0.5,0);
 
-//			if (right1.GetEncPosition() > -30*1000/3.32){
-			if (Delay (1)){
+			if (right1.GetEncPosition() > -30*1000/3.32){
+//			if (Delay (1)){
 				autoState = kDone;
 			}
 			break;
@@ -334,12 +339,14 @@ void Drive::Update (Joystick &xbox){
 	gearButton.Update(xbox);
 	if (gearsEnabled){
 		if (gearButton.State()){
-			gears->Set(DoubleSolenoid::kForward);
+			gearsRight->Set(DoubleSolenoid::kForward);
+			gearsLeft->Set(DoubleSolenoid::kForward);
 			if (!gearButton.PrevState()){
 				turnDeadband.SetMaxY(maxTurnHighGear);
 			}
 		} else {
-			gears->Set(DoubleSolenoid::kReverse);
+			gearsRight->Set(DoubleSolenoid::kReverse);
+			gearsLeft->Set(DoubleSolenoid::kReverse);
 			if (gearButton.PrevState()){
 				turnDeadband.SetMaxY(maxTurnLowGear);
 			}
@@ -462,19 +469,20 @@ void Drive::PostValues (){
 	driveTable->PutString("6.Driving Gear",(gearButton.State()?"HIGH GEAR":"LOW GEAR"));
 
 	//Debug Values: Troubleshoot discrepancy with above values
-	driveTable->PutNumber("Debug/0.LeftEffort",left1.Get());
-	driveTable->PutNumber("Debug/1.RightEffort",right1.Get());
+	driveTable->PutNumber("Debug2/0.LeftEffort",left1.Get());
+	driveTable->PutNumber("Debug2/1.RightEffort",right1.Get());
 
-	driveTable->PutNumber("Debug/2.LeftEncVel",left1.GetEncVel());
-	driveTable->PutNumber("Debug/3.RightEncVel",right1.GetEncVel());
+	driveTable->PutNumber("Debug2/2.LeftEncVel",left1.GetEncVel());
+	driveTable->PutNumber("Debug2/3.RightEncVel",right1.GetEncVel());
 
-	driveTable->PutNumber("Debug/4.LeftEncPos",left1.GetEncPosition());
-	driveTable->PutNumber("Debug/5.RightEncPos",right1.GetEncPosition());
+	driveTable->PutNumber("Debug2/4.LeftEncPos",left1.GetEncPosition());
+	driveTable->PutNumber("Debug2/5.RightEncPos",right1.GetEncPosition());
 
-	driveTable->PutNumber("Debug/6.Gears",gears->Get());
+	driveTable->PutNumber("Debug2/6.GearsLeft",gearsLeft->Get());
+	driveTable->PutNumber("Debug2/7.GearsRight",gearsRight->Get());
 
-	driveTable->PutNumber("Debug/7.MaxSpeedHighGear", maxTurnHighGear);
-	driveTable->PutNumber("Debug/8.MaxSpeedLowGear", maxTurnLowGear);
+	driveTable->PutNumber("Debug2/8.MaxSpeedHighGear", maxTurnHighGear);
+	driveTable->PutNumber("Debug2/9.MaxSpeedLowGear", maxTurnLowGear);
 }
 
 bool Drive::Delay(float delaySeconds){

@@ -141,7 +141,7 @@ private:
 		drive.Autonomous(autonomousMode);
 
 		//-----------Gear Wings-----------//
-		wings.Update(xbox);
+		wings.Update(xbox, true);
 
 		//----------Slurper---------------//
 		slurper.Update(xbox);
@@ -201,7 +201,7 @@ private:
 		*/
 
 		//-----------Gear Wings-----------//
-		wings.Update(xbox);
+		wings.Update(xbox, false);
 
 		//----------Slurper---------------//
 		slurper.Update(xbox);

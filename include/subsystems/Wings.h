@@ -45,7 +45,7 @@ public:
 	Wings (int trigger);
 
 	void Init (std::shared_ptr<ITable> nt);
-	void Update(Joystick &xbox);
+	void Update(Joystick &xbox, bool autonomous);
 
 	void SetTriggerButton(int button);
 	int GetTriggerButton();
