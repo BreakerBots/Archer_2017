@@ -45,7 +45,7 @@ Drive::Drive (double *izoneFromGearPlacer):
 	moveDeadband(0.1),
 	maxTurnHighGear(1),
 	maxTurnLowGear(1),
-	turnDeadband(0.2),
+	turnDeadband(0.1),
 
 	izone(izoneFromGearPlacer),
 	autoAim(-1),
@@ -332,7 +332,7 @@ void Drive::Update (Joystick &xbox){
 	else
 		autoAim.SetState(false);
 
-	printf("Adjust: %f\n",autoAdjustmentValue);
+//	printf("Adjust: %f\n",autoAdjustmentValue);
 	ReadPIDTable();
 
 	int rev = 1;
@@ -376,6 +376,7 @@ void Drive::Update (Joystick &xbox){
 
 //			if (!gearButton.PrevState()){
 //				turnDeadband.SetMaxY(maxTurnHighGear);
+//				turnDeadband.SetMinY(-maxTurningHighGear);
 //			}
 		} else {
 			gearsRight->Set(DoubleSolenoid::kReverse);
@@ -384,6 +385,7 @@ void Drive::Update (Joystick &xbox){
 			SmartDashboard::PutBoolean("DB/LED 0",false);
 //			if (gearButton.PrevState()){
 //				turnDeadband.SetMaxY(maxTurnLowGear);
+//				turnDeadband.SetMinY(-maxTurnLowGear);
 //			}
 		}
 	}

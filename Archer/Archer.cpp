@@ -213,7 +213,7 @@ private:
 		aiming.Update();
 		drive.Update(xbox);
 
-		printf("Angle: %.2f\n",gyro.GetAngle());
+//		printf("Angle: %.2f\n",gyro.GetAngle());
 		//Update PID loop
 		//PIDController gearPlacer will automatically read error from aiming,
 		//calculate controlEffort, and output that value to the drive system.
