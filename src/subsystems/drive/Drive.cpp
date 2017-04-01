@@ -159,12 +159,20 @@ void Drive::Autonomous(AutonomousMode autonomousMode/* Why would we need a joyst
 		drive.ArcadeDrive(0.0,0);
 		break;
 	case kBaseline:
-		advanceInches = -(112-30);
-		if (right1.GetEncPosition() + left1.GetEncPosition() > -10000){
-			drive.ArcadeDrive(0.5,0);
-			*izone = 0;
-		} else if (right1.GetEncPosition() + left1.GetEncPosition() > -43000){
-			drive.ArcadeDrive(0.5,0);
+		//The total distance from boiler to nearest peg is 130in.
+		//We want to come a bit short for safety --> 120in. The
+		//front of the robot must then travel 84in. (120in. - 36in.)
+
+		//To travel 75in. in putting the gear on the front peg, a
+		//value of 103in. is then scaled into encoder counts. Thus,
+		//we scale 84in. up to 115in (84in. * 103/75)
+
+		advanceInches = 115;
+		if (right1.GetEncPosition() + left1.GetEncPosition() > -advanceInches*1000/3.32){
+			drive.ArcadeDrive(0.5,autoAdjustmentValue);
+//			*izone = 0;
+//		} else if (right1.GetEncPosition() + left1.GetEncPosition() > -43000){
+//			drive.ArcadeDrive(0.5,autoAdjustmentValue);
 		} else {
 			drive.ArcadeDrive(0.0,0.0);
 			printf("Done\n");
