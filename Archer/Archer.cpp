@@ -22,6 +22,11 @@
 
 class Archer: public IterativeRobot {
 
+public:
+	enum Buttons {
+		kIntakeToggle
+	};
+
 private:
 
 	Joystick xbox;
@@ -39,8 +44,10 @@ private:
 	PIDController gyroPID;
 
 	Wings wings;
-	Slurper slurper;
+//	Slurper slurper;
 	Winch winch;
+
+//	ToggleButton forceClose;
 
 #ifdef SHOOTER
 	Shooter shooter;
@@ -61,12 +68,14 @@ public:
 		gyroPID(0.2,0.04,0,&gyro, &drive),
 
 		wings (),
-		slurper (),
+//		slurper (),
 		winch ()
 
 #ifdef SHOOTER
 		,shooter()
 #endif
+
+//		,forceClose(Buttons::kIntakeToggle)
 
 	{
 		//----------Initializations---------------//
@@ -129,6 +138,9 @@ private:
 		gyroPID.SetSetpoint(0);
 		gyroPID.m_totalError = 0;//Clear Accumulated Error
 
+		wings.Close();
+		drive.PullGear();
+
 		printf("Done\n");
 	}//AutonomousInit
 
@@ -140,11 +152,17 @@ private:
 		aiming.Update();
 		drive.Autonomous(autonomousMode);
 
+		if (subsystems->GetSubTable("Drive")->GetNumber("autoState",0) == Drive::kDeposit){
+			wings.Open();
+		} else if (subsystems->GetSubTable("Drive")->GetNumber("autoState",0) == 1){
+			wings.Close();
+		}
+
 		//-----------Gear Wings-----------//
 		wings.Update(xbox, true);
 
 		//----------Slurper---------------//
-		slurper.Update(xbox);
+//		slurper.Update(xbox);
 
 		//-------------Winch----------------//
 		winch.Update(xbox);
@@ -169,16 +187,27 @@ private:
 		//Called once at the start of each operator period
 		printf("TELEOP Initialized\n");
 
+		wings.Close();
 
 		printf("End of Teleop Init\n");
 
 	}//Teleop Init
 	void DisabledInit(){
 		printf("Disabled!!!\n");
+		gyroPID.Reset();
 	}//DisabledInit
 
 	void TeleopPeriodic(){
 		//Called PERIODICALLY during the operator period
+
+//		forceClose.Update(xbox);
+
+//		if (forceClose.State()){
+//			forceClose.Override(false);//Makes it a hold button
+		if (xbox.GetRawButton(XBox::Y)){
+			wings.Close();
+			drive.PullGear();
+		}
 
 		//-----------Drive System------------//
 		aiming.Update();
@@ -204,10 +233,15 @@ private:
 		wings.Update(xbox, false);
 
 		//----------Slurper---------------//
-		slurper.Update(xbox);
+//		slurper.Update(xbox);
 
 		//-------------Winch----------------//
 		winch.Update(xbox);
+
+		if (SmartDashboard::GetBoolean("DB/Button 0",false)){
+			gyro.Calibrate();
+			SmartDashboard::PutBoolean("DB/Button 0",false);
+		}
 
 		//------------Shooter----------------//
 #ifdef SHOOTER

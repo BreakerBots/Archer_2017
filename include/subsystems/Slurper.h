@@ -18,7 +18,7 @@ class Slurper {
 private:
 
 	enum Buttons {
-		kForwardToggle = XBox::Y
+		kForwardToggle = XBox::RB
 //		,kReverseHold = XBox::
 	};
 

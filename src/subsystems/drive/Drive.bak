@@ -43,8 +43,8 @@ Drive::Drive (double *izoneFromGearPlacer):
 	drive (left1, right1),
 
 	moveDeadband(0.1),
-	maxTurnHighGear(1),
-	maxTurnLowGear(1),
+//	maxTurnHighGear(1),
+//	maxTurnLowGear(1),
 	turnDeadband(0.2),
 
 	izone(izoneFromGearPlacer),
@@ -340,19 +340,19 @@ void Drive::Update (Joystick &xbox){
 	if (directionButton.State()) rev = -1;
 
 	if (driveEnabled){
-		if (autoAim.State()){
-			if (!autoAim.PrevState())
-				*izone = 0;
-
-			drive.ArcadeDrive(moveDeadband.OutputFor(rev*xbox.GetRawAxis(XBox::LY)),
-							autoAdjustmentValue);
-		} else {
+//		if (autoAim.State()){
+//			if (!autoAim.PrevState())
+//				*izone = 0;
+//
+//			drive.ArcadeDrive(moveDeadband.OutputFor(rev*xbox.GetRawAxis(XBox::LY)),
+//							autoAdjustmentValue);
+//		} else {
 			drive.ArcadeDrive(moveDeadband.OutputFor(rev*xbox.GetRawAxis(XBox::LY)),
 							turnDeadband.OutputFor(xbox.GetRawAxis(XBox::LX)));
 //			drive.ArcadeDrive(rev*xbox.GetRawAxis(XBox::LY), xbox.GetRawAxis(XBox::LX));
 //			driveTable->PutNumber("Adjusted_X",turnDeadband.OutputFor(xbox.GetRawAxis(XBox::LX)));
 //			driveTable->PutNumber("Adjusted_Y",moveDeadband.OutputFor(xbox.GetRawAxis(XBox::LY)));
-		}
+//		}
 	}
 
 	//---------PUSHER------------//
@@ -536,8 +536,8 @@ void Drive::PostValues (){
 	driveTable->PutNumber("Debug2/6.GearsLeft",gearsLeft->Get());
 	driveTable->PutNumber("Debug2/7.GearsRight",gearsRight->Get());
 
-	driveTable->PutNumber("Debug2/8.MaxSpeedHighGear", maxTurnHighGear);
-	driveTable->PutNumber("Debug2/9.MaxSpeedLowGear", maxTurnLowGear);
+//	driveTable->PutNumber("Debug2/8.MaxSpeedHighGear", maxTurnHighGear);
+//	driveTable->PutNumber("Debug2/9.MaxSpeedLowGear", maxTurnLowGear);
 }
 
 bool Drive::Delay(float delaySeconds){

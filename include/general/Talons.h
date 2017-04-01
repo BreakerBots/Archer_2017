@@ -36,6 +36,10 @@ public:
 	enum Spine {
 		INDEXER=12, SPINE=13
 	};
+
+	enum Lights {
+		kRed=32
+	};
 };
 
 

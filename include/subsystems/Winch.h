@@ -21,7 +21,7 @@ class Winch {
 
 public:
 	enum Buttons {
-		kWinchTrigger = XBox::LT
+		kWinchTrigger = XBox::RT
 	};
 
 private:

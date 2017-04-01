@@ -25,17 +25,17 @@ public:
 		};
 	enum AutoState {
 			kHook, kStraight, kTurn, kWait, kClose, kFinal, kDone
-			,kForward, kDeposit, kReverse
+			,kForward, kDeposit, kDelay, kReverse
 		};
 
 	enum Buttons {
-		kGearToggle = XBox::A,
+		kGearToggle = XBox::B,
 		kDirectionToggle = XBox::LB,
 		//As the hold button is triggered by an axis,
 		//the set value is an illegal button number.
 		kAimingHoldNull = -1,
-		kAimingTrigger = XBox::RT,
-		kPusherToggle = XBox::B
+		kAimingTrigger = -1,
+		kPusherToggle = XBox::A
 	};
 
 private:
@@ -55,6 +55,8 @@ private:
 	DoubleSolenoid* gearsLeft;
 	DoubleSolenoid* gearsRight;
 	ToggleButton gearButton;
+	CANTalon gearRed;
+
 
 		//3-talon drive for the right side
 	CANTalon right1;
@@ -110,7 +112,13 @@ public:
 	bool GearsEnabled();
 	void SetGearsEnabled(bool areGearsEnabled);
 
+	bool PusherOut();
+	void PushGear();
+	void PullGear();
+
 	void PIDWrite(double output);
+
+	void GearLights();
 
 	void ReadPIDTable();
 	void WritePIDTable();
