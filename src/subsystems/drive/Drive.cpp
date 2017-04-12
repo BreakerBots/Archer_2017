@@ -168,7 +168,7 @@ void Drive::Autonomous(AutonomousMode autonomousMode/* Why would we need a joyst
 		//we scale 84in. up to 115in (84in. * 103/75)
 
 		advanceInches = 115;
-		if (right1.GetEncPosition() + left1.GetEncPosition() > -advanceInches*1000/3.32){
+		if (right1.GetEncPosition()*2/* + left1.GetEncPosition()/*No Encoder on Chadwick's left side*/ > -advanceInches*1000/3.32){
 			drive.ArcadeDrive(0.5,autoAdjustmentValue);
 //			*izone = 0;
 //		} else if (right1.GetEncPosition() + left1.GetEncPosition() > -43000){
@@ -282,7 +282,7 @@ void Drive::Autonomous(AutonomousMode autonomousMode/* Why would we need a joyst
 //			if (Delay(3)){
 //			if (right1.GetEncPosition() < -60*1000/3.32){
 			/* From kBaseline MODIFIED  -- -50,000 --> -43,000*/
-			if (right1.GetEncPosition() + left1.GetEncPosition() < -advanceInches *1000/3.32){
+			if (right1.GetEncPosition()*2/* + left1.GetEncPosition()/*No encoder on Chadwick's left side*/< -advanceInches *1000/3.32){
 				autoState = kDeposit;
 				driveTable->PutNumber("autoState",autoState);
 
