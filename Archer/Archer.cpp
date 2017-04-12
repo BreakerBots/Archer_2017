@@ -89,7 +89,7 @@ private:
 	void RobotInit(){
 		printf("RobotInit... ");
 
-		if (subsystems->GetBoolean("cameraEnabled",false))
+		if (subsystems->GetBoolean("cameraEnabled",true))
 			CameraServer::GetInstance()->StartAutomaticCapture();
 
 		Init();
