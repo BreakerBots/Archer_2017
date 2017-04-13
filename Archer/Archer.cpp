@@ -137,6 +137,7 @@ private:
 		gyro.Reset();
 		gyroPID.SetSetpoint(0);
 		gyroPID.m_totalError = 0;//Clear Accumulated Error
+		gyroPID.Enable();
 
 		wings.Close();
 		drive.PullGear();
@@ -146,7 +147,7 @@ private:
 
 	void AutonomousPeriodic(){
 		//Called PERIODICALLY during the Auto period
-
+		subsystems->GetSubTable("Drive")->PutNumber("angle",gyro.GetAngle());
 		printf("Angle: %.2f\n",gyro.GetAngle());
 
 		aiming.Update();
@@ -154,8 +155,12 @@ private:
 
 		if (subsystems->GetSubTable("Drive")->GetNumber("autoState",0) == Drive::kDeposit){
 			wings.Open();
-		} else if (subsystems->GetSubTable("Drive")->GetNumber("autoState",0) == 1){
+		} else if (subsystems->GetSubTable("Drive")->GetNumber("autoState",0) == Drive::kStraight){
 			wings.Close();
+		} else if (subsystems->GetSubTable("Drive")->GetNumber("autoState",0) == Drive::kTurn){
+			gyroPID.SetSetpoint(-60);
+			gyroPID.Reset();
+			gyroPID.Enable();
 		}
 
 		//-----------Gear Wings-----------//
@@ -201,6 +206,8 @@ private:
 		//Called PERIODICALLY during the operator period
 
 //		forceClose.Update(xbox);
+
+		subsystems->PutNumber("angle",gyro.GetAngle());
 
 //		if (forceClose.State()){
 //			forceClose.Override(false);//Makes it a hold button

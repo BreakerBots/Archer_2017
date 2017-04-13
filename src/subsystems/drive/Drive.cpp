@@ -124,7 +124,7 @@ void Drive::AutonomousInit(AutonomousMode mode){
 
 	pusher->Set(DoubleSolenoid::kReverse);
 
-	if (mode == AutonomousMode::kGyroStraight){
+	if (mode == AutonomousMode::kGyroStraight || mode == AutonomousMode::kGear2){
 		autoState = AutoState::kForward;
 
 		autoTimer.Reset();
@@ -192,6 +192,74 @@ void Drive::Autonomous(AutonomousMode autonomousMode/* Why would we need a joyst
 		}
 		break;
 	case kGear2:
+
+		advanceInches = /*7ft.*/74*(2);
+		switch (autoState){
+		case kForward:
+			drive.ArcadeDrive(0.65, autoAdjustmentValue);
+
+//			if (right1.GetEncPosition() < -60*1000/3.32){
+			/* From kBaseline MODIFIED  -- -50,000 --> -43,000*/
+			if (left1.GetEncPosition()*2/* + right1.GetEncPosition()No encoder on Chadwick's right side*/< -advanceInches *1000/3.32){
+				autoState = kTurn;
+				driveTable->PutNumber("autoState",autoState);
+			}
+			break;
+		case kTurn:
+			drive.ArcadeDrive(0, -0.75);
+			left1.SetEncPosition(0);
+
+			if (driveTable->GetNumber("angle",0) < -55){
+				autoState = kClose;
+				left1.SetEncPosition(0);
+				driveTable->PutNumber("autoState",autoState);
+			}
+
+			break;
+		case kClose:
+			drive.ArcadeDrive(0.5, autoAdjustmentValue);
+
+			if (left1.GetEncPosition()*2 < -(advanceInches-14*2)*1000/3.32){
+				autoState = kDone;
+				driveTable->PutNumber("autoState",autoState);
+
+				autoTimer.Reset();
+				autoTimer.Start();
+			}
+			break;
+		case kDeposit:
+			drive.ArcadeDrive(0.0,0);
+
+			if (Delay(1)){
+				pusher->Set(DoubleSolenoid::kForward);
+				autoState = kDelay;
+			}
+			break;
+		case kDelay:
+			if (Delay(1.5)){
+				autoState = kReverse;
+			}
+			break;
+		case kReverse:
+			drive.ArcadeDrive(-0.5,0);
+
+			if (left1.GetEncPosition() > -30*1000/3.32){
+//			if (Delay (1)){
+//				pusher->Set(DoubleSolenoid::kReverse);
+				autoState = kDone;
+				driveTable->PutNumber("autoState",0);
+			}
+			break;
+		case kDone:
+			drive.ArcadeDrive(0.0,0);
+
+			driveTable->PutNumber("autoState",1);
+			pusher->Set(DoubleSolenoid::kReverse);
+			break;
+		default:
+			printf("Unknown Auto State!!\n");
+			break;
+		}
 		break;
 	case kGear3:
 		advanceInches = -64;//inches
@@ -306,7 +374,7 @@ void Drive::Autonomous(AutonomousMode autonomousMode/* Why would we need a joyst
 		case kReverse:
 			drive.ArcadeDrive(-0.5,0);
 
-			if (right1.GetEncPosition() > -30*1000/3.32){
+			if (left1.GetEncPosition() > -30*1000/3.32){
 //			if (Delay (1)){
 //				pusher->Set(DoubleSolenoid::kReverse);
 				autoState = kDone;
