@@ -93,6 +93,7 @@ private:
 			//TurnVal output by the PIDController
 	float autoAdjustmentValue;
 	int encoderCountsForGear2;
+	bool onTarget;
 
 	AutoState autoState;
 	Timer autoTimer;

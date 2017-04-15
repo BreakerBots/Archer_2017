@@ -179,7 +179,7 @@ private:
 
 		case Drive::kPrepTurn:
 			gyroPID.Reset();
-			gyroPID.SetPID(0.09, 0.01, 0);
+			gyroPID.SetPID(0.07, 0.01, 0);
 			gyroPID.SetSetpoint(-60);
 			gyroPID.Enable();
 			break;

@@ -51,6 +51,7 @@ Drive::Drive (double *izoneFromGearPlacer):
 	autoAim(-1),
 	autoAdjustmentValue(0),
 	encoderCountsForGear2(0),
+	onTarget(false),
 
 	autoState(Drive::AutoState::kStraight),
 	autoTimer()
@@ -196,10 +197,10 @@ Drive::AutonomousCommand Drive::Autonomous(AutonomousMode autonomousMode/* Why w
 		break;
 	case kGear2:
 
-		advanceInches = /*7ft.*/68*(2);
+		advanceInches = /*7ft.*/63*(2);
 		switch (autoState){
 		case kForward:
-			drive.ArcadeDrive(0.65, autoAdjustmentValue);
+			drive.ArcadeDrive(0.85, autoAdjustmentValue);
 
 //			if (right1.GetEncPosition() < -60*1000/3.32){
 			/* From kBaseline MODIFIED  -- -50,000 --> -43,000*/
@@ -216,19 +217,30 @@ Drive::AutonomousCommand Drive::Autonomous(AutonomousMode autonomousMode/* Why w
 
 //			if (driveTable->GetNumber("angle",0) < -55){
 //			left1.SetEncPosition(0);
-			if (Delay(3)){
+//			if (onTarget && autoTimer.Get() > 0.25){
+			if (Delay(2.5)){
 				printf("Closing\n");
 				autoState = kClose;
 //				left1.SetEncPosition(0);
 				encoderCountsForGear2 = 2*left1.GetEncPosition();
 
 				command = AutonomousCommand::kSwitchToDrivePID;
+//			} else if (fabs(driveTable->GetNumber("angle",0)-60) < 0.4){
+//				if (!onTarget){
+//					onTarget = true;
+//					autoTimer.Reset();
+//					autoTimer.Start();
+//				}
+//			} else {
+//				autoTimer.Reset();
+//				onTarget = false;
 			}
+
 
 			break;
 		case kClose:
 			printf("Driving Straight!\n");
-			drive.ArcadeDrive(0.5, autoAdjustmentValue);
+			drive.ArcadeDrive(0.65, autoAdjustmentValue);
 
 			if (left1.GetEncPosition()*2 - encoderCountsForGear2 < -(120)*1000/3.32){
 				autoState = kDone;
