@@ -65,7 +65,8 @@ public:
 		autonomousMode(Drive::kGear3),
 
 		gyro(SPI::kOnboardCS0),
-		gyroPID(0.2,0.04,0,&gyro, &drive),
+//		gyroPID(0.2,0.04,0,&gyro, &drive),
+		gyroPID(0,0,0,&gyro, &drive),
 
 		wings (),
 //		slurper (),
@@ -151,16 +152,41 @@ private:
 		printf("Angle: %.2f\n",gyro.GetAngle());
 
 		aiming.Update();
-		drive.Autonomous(autonomousMode);
 
-		if (subsystems->GetSubTable("Drive")->GetNumber("autoState",0) == Drive::kDeposit){
+		switch (drive.Autonomous(autonomousMode)){
+		case Drive::kOpenWings:
 			wings.Open();
-		} else if (subsystems->GetSubTable("Drive")->GetNumber("autoState",0) == Drive::kStraight){
+			break;
+		case Drive::kCloseWings:
 			wings.Close();
-		} else if (subsystems->GetSubTable("Drive")->GetNumber("autoState",0) == Drive::kTurn){
-			gyroPID.SetSetpoint(-60);
+			break;
+
+		case Drive::kTurnTo60:
 			gyroPID.Reset();
+			gyroPID.SetSetpoint(-60);
 			gyroPID.Enable();
+			break;
+		case Drive::kSwitchToTurnPID:
+			gyroPID.Reset();
+			gyroPID.SetPID(0.09, 0.01, 0);
+			gyroPID.Enable();
+			break;
+		case Drive::kSwitchToDrivePID:
+			gyroPID.Reset();
+			gyroPID.SetPID(0.2, 0.04, 0);
+			gyroPID.Enable();
+			break;
+
+		case Drive::kPrepTurn:
+			gyroPID.Reset();
+			gyroPID.SetPID(0.09, 0.01, 0);
+			gyroPID.SetSetpoint(-60);
+			gyroPID.Enable();
+			break;
+
+		default:
+			//No Command
+			break;
 		}
 
 		//-----------Gear Wings-----------//

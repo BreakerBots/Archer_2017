@@ -50,6 +50,7 @@ Drive::Drive (double *izoneFromGearPlacer):
 	izone(izoneFromGearPlacer),
 	autoAim(-1),
 	autoAdjustmentValue(0),
+	encoderCountsForGear2(0),
 
 	autoState(Drive::AutoState::kStraight),
 	autoTimer()
@@ -124,18 +125,20 @@ void Drive::AutonomousInit(AutonomousMode mode){
 
 	pusher->Set(DoubleSolenoid::kReverse);
 
-	if (mode == AutonomousMode::kGyroStraight || mode == AutonomousMode::kGear2){
+	if (mode == AutonomousMode::kGyroStraight){
 		autoState = AutoState::kForward;
 
 		autoTimer.Reset();
 		autoTimer.Start();
+	} else if (mode == AutonomousMode::kGear2){
+		autoState = AutoState::kForward;
 	}
 
 	driveTable->PutNumber("autoState",0);
 
 }
-void Drive::Autonomous(AutonomousMode autonomousMode/* Why would we need a joystick?*/){
-
+Drive::AutonomousCommand Drive::Autonomous(AutonomousMode autonomousMode/* Why would we need a joystick?*/){
+	AutonomousCommand command = AutonomousCommand::kNull;
 	ReadPIDTable();
 
 	/*
@@ -193,7 +196,7 @@ void Drive::Autonomous(AutonomousMode autonomousMode/* Why would we need a joyst
 		break;
 	case kGear2:
 
-		advanceInches = /*7ft.*/74*(2);
+		advanceInches = /*7ft.*/68*(2);
 		switch (autoState){
 		case kForward:
 			drive.ArcadeDrive(0.65, autoAdjustmentValue);
@@ -202,26 +205,33 @@ void Drive::Autonomous(AutonomousMode autonomousMode/* Why would we need a joyst
 			/* From kBaseline MODIFIED  -- -50,000 --> -43,000*/
 			if (left1.GetEncPosition()*2/* + right1.GetEncPosition()No encoder on Chadwick's right side*/< -advanceInches *1000/3.32){
 				autoState = kTurn;
-				driveTable->PutNumber("autoState",autoState);
+				command = AutonomousCommand::kPrepTurn;
+
+				autoTimer.Reset();
+				autoTimer.Start();
 			}
 			break;
 		case kTurn:
-			drive.ArcadeDrive(0, -0.75);
-			left1.SetEncPosition(0);
+			drive.ArcadeDrive(0, autoAdjustmentValue);
 
-			if (driveTable->GetNumber("angle",0) < -55){
+//			if (driveTable->GetNumber("angle",0) < -55){
+//			left1.SetEncPosition(0);
+			if (Delay(3)){
+				printf("Closing\n");
 				autoState = kClose;
-				left1.SetEncPosition(0);
-				driveTable->PutNumber("autoState",autoState);
+//				left1.SetEncPosition(0);
+				encoderCountsForGear2 = 2*left1.GetEncPosition();
+
+				command = AutonomousCommand::kSwitchToDrivePID;
 			}
 
 			break;
 		case kClose:
+			printf("Driving Straight!\n");
 			drive.ArcadeDrive(0.5, autoAdjustmentValue);
 
-			if (left1.GetEncPosition()*2 < -(advanceInches-14*2)*1000/3.32){
+			if (left1.GetEncPosition()*2 - encoderCountsForGear2 < -(120)*1000/3.32){
 				autoState = kDone;
-				driveTable->PutNumber("autoState",autoState);
 
 				autoTimer.Reset();
 				autoTimer.Start();
@@ -247,13 +257,12 @@ void Drive::Autonomous(AutonomousMode autonomousMode/* Why would we need a joyst
 //			if (Delay (1)){
 //				pusher->Set(DoubleSolenoid::kReverse);
 				autoState = kDone;
-				driveTable->PutNumber("autoState",0);
 			}
 			break;
 		case kDone:
 			drive.ArcadeDrive(0.0,0);
+			printf("Done\n");
 
-			driveTable->PutNumber("autoState",1);
 			pusher->Set(DoubleSolenoid::kReverse);
 			break;
 		default:
@@ -352,7 +361,7 @@ void Drive::Autonomous(AutonomousMode autonomousMode/* Why would we need a joyst
 			/* From kBaseline MODIFIED  -- -50,000 --> -43,000*/
 			if (left1.GetEncPosition()*2/* + right1.GetEncPosition()/*No encoder on Chadwick's right side*/< -advanceInches *1000/3.32){
 				autoState = kDeposit;
-				driveTable->PutNumber("autoState",autoState);
+				command = AutonomousCommand::kOpenWings;
 
 				autoTimer.Reset();
 				autoTimer.Start();
@@ -378,13 +387,12 @@ void Drive::Autonomous(AutonomousMode autonomousMode/* Why would we need a joyst
 //			if (Delay (1)){
 //				pusher->Set(DoubleSolenoid::kReverse);
 				autoState = kDone;
-				driveTable->PutNumber("autoState",0);
+				command = AutonomousCommand::kCloseWings;
 			}
 			break;
 		case kDone:
 			drive.ArcadeDrive(0.0,0);
 
-			driveTable->PutNumber("autoState",1);
 			pusher->Set(DoubleSolenoid::kReverse);
 			break;
 		default:
@@ -399,6 +407,8 @@ void Drive::Autonomous(AutonomousMode autonomousMode/* Why would we need a joyst
 
 	GearLights();
 	PostValues();
+
+	return command;
 }
 
 void Drive::Update (Joystick &xbox){

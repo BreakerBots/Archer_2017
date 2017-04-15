@@ -28,6 +28,14 @@ public:
 			,kForward, kDeposit, kDelay, kReverse
 		};
 
+	enum AutonomousCommand {
+		kNull,
+		kOpenWings, kCloseWings,
+		kTurnTo60,
+		kSwitchToTurnPID, kSwitchToDrivePID,
+		kPrepTurn
+		};
+
 	enum Buttons {
 		kGearToggle = XBox::B,
 		kDirectionToggle = XBox::LB,
@@ -84,6 +92,7 @@ private:
 	HoldButton autoAim;
 			//TurnVal output by the PIDController
 	float autoAdjustmentValue;
+	int encoderCountsForGear2;
 
 	AutoState autoState;
 	Timer autoTimer;
@@ -94,7 +103,7 @@ public:
 
 	void Init (std::shared_ptr<ITable> nt, std::shared_ptr<NetworkTable> pixyNt);
 	void AutonomousInit(AutonomousMode mode);
-	void Autonomous (AutonomousMode mode);
+	AutonomousCommand Autonomous (AutonomousMode mode);
 	void Update (Joystick &xbox);
 
 	bool Teleop();
