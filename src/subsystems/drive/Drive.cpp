@@ -197,7 +197,7 @@ Drive::AutonomousCommand Drive::Autonomous(AutonomousMode autonomousMode/* Why w
 		break;
 	case kGear2:
 
-		advanceInches = /*7ft.*/63*(2);
+		advanceInches = /*7ft.*/66*(2);
 		switch (autoState){
 		case kForward:
 			drive.ArcadeDrive(0.85, autoAdjustmentValue);
