@@ -243,7 +243,8 @@ Drive::AutonomousCommand Drive::Autonomous(AutonomousMode autonomousMode/* Why w
 			drive.ArcadeDrive(0.65, autoAdjustmentValue);
 
 			if (left1.GetEncPosition()*2 - encoderCountsForGear2 < -(120)*1000/3.32){
-				autoState = kDone;
+				autoState = kDeposit;
+				encoderCountsForGear2 = 2*left1.GetEncPosition();
 
 				autoTimer.Reset();
 				autoTimer.Start();
@@ -265,7 +266,7 @@ Drive::AutonomousCommand Drive::Autonomous(AutonomousMode autonomousMode/* Why w
 		case kReverse:
 			drive.ArcadeDrive(-0.5,0);
 
-			if (left1.GetEncPosition() > -30*1000/3.32){
+			if (2*left1.GetEncPosition() - encoderCountsForGear2 > 30*1000/3.32){
 //			if (Delay (1)){
 //				pusher->Set(DoubleSolenoid::kReverse);
 				autoState = kDone;
