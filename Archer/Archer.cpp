@@ -163,7 +163,7 @@ private:
 
 		case Drive::kTurnTo60:
 			gyroPID.Reset();
-			gyroPID.SetSetpoint(-63);
+			gyroPID.SetSetpoint(-60);
 			gyroPID.Enable();
 			break;
 		case Drive::kSwitchToTurnPID:
@@ -179,8 +179,9 @@ private:
 
 		case Drive::kPrepTurn:
 			gyroPID.Reset();
-			gyroPID.SetPID(0.07, 0.01, 0);
-			gyroPID.SetSetpoint(-63);
+//			gyroPID.SetPID(0.02, 0.002, 0);
+			gyroPID.SetPID(0.05, 0.002, 0.02);
+			gyroPID.SetSetpoint(-60);
 			gyroPID.Enable();
 			break;
 

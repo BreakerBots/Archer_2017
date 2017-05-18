@@ -189,4 +189,4 @@ private:
 
 };
 
-START_ROBOT_CLASS(GyroTesting)
+//START_ROBOT_CLASS(GyroTesting)

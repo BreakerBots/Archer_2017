@@ -171,9 +171,11 @@ Drive::AutonomousCommand Drive::Autonomous(AutonomousMode autonomousMode/* Why w
 		//value of 103in. is then scaled into encoder counts. Thus,
 		//we scale 84in. up to 115in (84in. * 103/75)
 
-		advanceInches = 115;
-		if (left1.GetEncPosition()*2/* + right1.GetEncPosition()/*No Encoder on Chadwick's right side*/ > -advanceInches*1000/3.32){
-			drive.ArcadeDrive(0.5,autoAdjustmentValue);
+//		advanceInches = 115;
+		advanceInches = 50;
+		if (left1.GetEncPosition()*2/* + right1.GetEncPosition() No Encoder on Chadwick's right side*/ > -advanceInches*1000/3.32){
+			drive.ArcadeDrive(0.4,autoAdjustmentValue);
+//			drive.ArcadeDrive(0.5, autoAdjustmentValue);
 //			*izone = 0;
 //		} else if (right1.GetEncPosition() + left1.GetEncPosition() > -43000){
 //			drive.ArcadeDrive(0.5,autoAdjustmentValue);
@@ -197,7 +199,7 @@ Drive::AutonomousCommand Drive::Autonomous(AutonomousMode autonomousMode/* Why w
 		break;
 	case kGear2:
 
-		advanceInches = /*7ft.*/66*(2);
+		advanceInches = /*7ft.*/60*(2)    *0.85 *0.9 *0.95  *1.15   *0.95/**1.05*/;
 		switch (autoState){
 		case kForward:
 			drive.ArcadeDrive(0.85, autoAdjustmentValue);
@@ -218,7 +220,7 @@ Drive::AutonomousCommand Drive::Autonomous(AutonomousMode autonomousMode/* Why w
 //			if (driveTable->GetNumber("angle",0) < -55){
 //			left1.SetEncPosition(0);
 //			if (onTarget && autoTimer.Get() > 0.25){
-			if (Delay(2.5)){
+			if (Delay(2.5*1.5)){
 				printf("Closing\n");
 				autoState = kClose;
 //				left1.SetEncPosition(0);
@@ -242,9 +244,11 @@ Drive::AutonomousCommand Drive::Autonomous(AutonomousMode autonomousMode/* Why w
 			printf("Driving Straight!\n");
 			drive.ArcadeDrive(0.65, autoAdjustmentValue);
 
-			if (left1.GetEncPosition()*2 - encoderCountsForGear2 < -(120)*1000/3.32){
+			if (left1.GetEncPosition()*2 - encoderCountsForGear2 < (0.7) * -(120)*1000/3.32){
 				autoState = kDeposit;
 				encoderCountsForGear2 = 2*left1.GetEncPosition();
+
+				command = AutonomousCommand::kOpenWings;
 
 				autoTimer.Reset();
 				autoTimer.Start();
@@ -253,13 +257,13 @@ Drive::AutonomousCommand Drive::Autonomous(AutonomousMode autonomousMode/* Why w
 		case kDeposit:
 			drive.ArcadeDrive(0.0,0);
 
-			if (Delay(1)){
+			if (Delay(0.5)){
 				pusher->Set(DoubleSolenoid::kForward);
 				autoState = kDelay;
 			}
 			break;
 		case kDelay:
-			if (Delay(1.5)){
+			if (Delay(0.5)){
 				autoState = kReverse;
 			}
 			break;
@@ -270,6 +274,7 @@ Drive::AutonomousCommand Drive::Autonomous(AutonomousMode autonomousMode/* Why w
 //			if (Delay (1)){
 //				pusher->Set(DoubleSolenoid::kReverse);
 				autoState = kDone;
+				command = AutonomousCommand::kCloseWings;
 			}
 			break;
 		case kDone:
@@ -362,7 +367,7 @@ Drive::AutonomousCommand Drive::Autonomous(AutonomousMode autonomousMode/* Why w
 		break;
 	case kGyroStraight:
 
-		advanceInches = 103;
+		advanceInches = 103   *1.1;
 
 		switch (autoState){
 		case kForward:
@@ -373,6 +378,14 @@ Drive::AutonomousCommand Drive::Autonomous(AutonomousMode autonomousMode/* Why w
 //			if (right1.GetEncPosition() < -60*1000/3.32){
 			/* From kBaseline MODIFIED  -- -50,000 --> -43,000*/
 			if (left1.GetEncPosition()*2/* + right1.GetEncPosition()/*No encoder on Chadwick's right side*/< -advanceInches *1000/3.32){
+
+				/*
+				 * -advanceInches(103)*1000/3.32 == -31,024
+				 * Encoder count for each side == -15,512
+				 *
+				 * Inches we want to travel =
+				 */
+
 				autoState = kDeposit;
 				command = AutonomousCommand::kOpenWings;
 
