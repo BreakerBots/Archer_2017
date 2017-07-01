@@ -12,6 +12,8 @@
 
 #include "general/XBox.h"
 
+#include <chrono>
+
 //Lidar Defines
 #define LIDAR_ADDR 0x62
 #define LIDAR_CONFIG_REGISTER 0x00
@@ -23,6 +25,9 @@ private:
 	I2C i2c;
 	unsigned char distArray[2];
 	int distance;
+
+	int time_buffer[100];
+	int index = 0;
 
 public:
 	LidarOnBoard():
@@ -44,16 +49,16 @@ private:
 		}
 //		printf("Requested Distance Measurement...\n");
 
-		std::uint8_t status;
-
-		std::uint8_t statusRegister = 0x01;
-		do {
-			i2c.WriteBulk(&statusRegister, 1);
-			i2c.ReadOnly(1, &status);
-
-			//			printf("Status: %d\t(status && 1)== %d\n",status,status&1);
-//			printf("Tests: (5&&1)==%d    (4&&1)==%d  (36&&1)==%d\n",5&1, 4&1, 36&1);
-		} while ((status & 1) == 1);
+//		std::uint8_t status;
+//
+//		std::uint8_t statusRegister = 0x01;
+//		do {
+//			i2c.WriteBulk(&statusRegister, 1);
+//			i2c.ReadOnly(1, &status);
+//
+//			//			printf("Status: %d\t(status && 1)== %d\n",status,status&1);
+////			printf("Tests: (5&&1)==%d    (4&&1)==%d  (36&&1)==%d\n",5&1, 4&1, 36&1);
+//		} while ((status & 1) == 1);
 
 		std::uint8_t readRegister = LIDAR_DISTANCE_REGISTER;
 
@@ -87,11 +92,22 @@ private:
 
 	void TeleopPeriodic(){
 
+		int now = std::chrono::high_resolution_clock::to_time_t(std::chrono::high_resolution_clock::now());
+		time_buffer[index] = now;
+		index++;
+
+		if (index == 100) index = 0;
+		int max = now;
+		int min = time_buffer[index];
+
+		float fps = 100.0/(max-min);
+
 //		printf("Loop\n");
 		UpdateLidar();
 
-		SmartDashboard::PutNumber("LidarDistance", (256*distArray[0]+distArray[1])/2.54);
-		printf("\tDistance: %.0f inches\n", (256*distArray[0]+distArray[1])/2.54);
+		float dist = (256*distArray[0]+distArray[1])/2.54;
+//		SmartDashboard::PutNumber("LidarDistance", dist);
+		printf("\tDistance: %.1f inches\tFPS: %.1f\tNow: %d\n", dist, fps, now);
 
 	}//teleop Periodic
 
