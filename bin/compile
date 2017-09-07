@@ -1,0 +1,5 @@
+echo "Compiling ../src"
+
+javac -d . ../src/NetworkTableIO.java ../src/Displayable.java ../src/WidgetNumber.java ../src/WidgetPanel.java ../src/Main.java
+
+echo "Done"
