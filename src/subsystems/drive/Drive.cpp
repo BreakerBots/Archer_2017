@@ -9,6 +9,7 @@
 
 #include "general/XBox.h"
 #include "general/Talons.h"
+#include "ctrlib/CANTalon.h"
 
 #include "subsystems/drive/Drive.h"
 

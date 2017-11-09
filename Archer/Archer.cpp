@@ -1,5 +1,5 @@
 #include <WPILib.h>
-#include <CANTalon.h>
+#include <ctrlib/CANTalon.h>
 
 #include <algorithm>
 

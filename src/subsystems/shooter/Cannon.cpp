@@ -6,7 +6,7 @@
  */
 
 #include "WPILib.h"
-#include "CANTalon.h"
+#include "ctrlib/CANTalon.h"
 
 #include "general/Talons.h"
 #include "VelocityController.h"

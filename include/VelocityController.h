@@ -9,7 +9,7 @@
 #define VELOCITYCONTROLLER_H_
 
 #include "WPILib.h"
-#include "CANTalon.h"
+#include "ctrlib/CANTalon.h"
 
 class VelocityController : public ITableListener{
 
