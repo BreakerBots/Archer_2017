@@ -112,6 +112,7 @@ void Drive::Init (std::shared_ptr<ITable> nt, std::shared_ptr<NetworkTable> pixy
 	ReadPIDTable();
 	WritePIDTable();
 	drive.SetMaxOutput(1);
+	drive.SetSafetyEnabled(false);
 
 	gyroPID.Enable();
 	gyroPID.InitTable(nt->GetSubTable("Gyro"));
