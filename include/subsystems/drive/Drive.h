@@ -88,7 +88,8 @@ private:
 
 		//Autonomous Control Settings
 			//Controlled by user or autonomous
-	double *izone;//Used by aiming->drive PID controller
+	PIDController gyroPID;
+	//double *izone;//Used by aiming->drive PID controller
 	HoldButton autoAim;
 			//TurnVal output by the PIDController
 	float autoAdjustmentValue;
@@ -100,7 +101,7 @@ private:
 
 public:
 
-	Drive (double *izone);
+	Drive (ADXRS450_Gyro* robotGyro);
 
 	void Init (std::shared_ptr<ITable> nt, std::shared_ptr<NetworkTable> pixyNt);
 	void AutonomousInit(AutonomousMode mode);
@@ -129,6 +130,7 @@ public:
 	void PIDWrite(double output);
 
 	void GearLights();
+	void ResetGyro();
 
 	void ReadPIDTable();
 	void WritePIDTable();

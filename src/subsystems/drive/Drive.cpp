@@ -11,6 +11,8 @@
 #include "general/Talons.h"
 #include "ctrlib/CANTalon.h"
 
+#include "ADXRS450_Gyro.h"
+
 #include "subsystems/drive/Drive.h"
 
 /*
@@ -21,7 +23,7 @@
  */
 
 
-Drive::Drive (double *izoneFromGearPlacer):
+Drive::Drive (ADXRS450_Gyro* gyro):
 
 	driveEnabled(true),
 	gearsEnabled(true),
@@ -48,7 +50,9 @@ Drive::Drive (double *izoneFromGearPlacer):
 	maxTurnLowGear(1),
 	turnDeadband(0.1),
 
-	izone(izoneFromGearPlacer),
+//	izone(izoneFromGearPlacer),
+	gyroPID(0.2,0.04,0,gyro,this),
+
 	autoAim(-1),
 	autoAdjustmentValue(0),
 	encoderCountsForGear2(0),
@@ -109,6 +113,9 @@ void Drive::Init (std::shared_ptr<ITable> nt, std::shared_ptr<NetworkTable> pixy
 	WritePIDTable();
 	drive.SetMaxOutput(1);
 
+	gyroPID.Enable();
+	gyroPID.InitTable(nt->GetSubTable("Gyro"));
+
 	autoTimer.Start();
 //	drive.SetMaxOutput(650);
 
@@ -132,11 +139,17 @@ void Drive::AutonomousInit(AutonomousMode mode){
 
 		autoTimer.Reset();
 		autoTimer.Start();
-	} else if (mode == AutonomousMode::kGear2){
+	} else if (mode == AutonomousMode::kGear2 || mode == AutonomousMode::kGear3){
 		autoState = AutoState::kForward;
 	}
 
 	driveTable->PutNumber("autoState",0);
+
+	//Transfered from Archer
+	gyroPID.SetSetpoint(0);
+	gyroPID.Reset();
+	gyroPID.Enable();
+
 
 }
 Drive::AutonomousCommand Drive::Autonomous(AutonomousMode autonomousMode/* Why would we need a joystick?*/){
@@ -190,7 +203,7 @@ Drive::AutonomousCommand Drive::Autonomous(AutonomousMode autonomousMode/* Why w
 		advanceInches = -(112-30);
 		if (right1.GetEncPosition() + left1.GetEncPosition() > -10000){
 			drive.ArcadeDrive(0.5,0);
-			*izone = 0;
+			gyroPID.Reset();
 		} else if (right1.GetEncPosition() + left1.GetEncPosition() > -50000){
 			drive.ArcadeDrive(0.5,autoAdjustmentValue);
 		} else {
@@ -209,7 +222,11 @@ Drive::AutonomousCommand Drive::Autonomous(AutonomousMode autonomousMode/* Why w
 			/* From kBaseline MODIFIED  -- -50,000 --> -43,000*/
 			if (left1.GetEncPosition()*2/* + right1.GetEncPosition()No encoder on Chadwick's right side*/< -advanceInches *1000/3.32){
 				autoState = kTurn;
-				command = AutonomousCommand::kPrepTurn;
+				gyroPID.Reset();
+	//			gyroPID.SetPID(0.02, 0.002, 0);
+				gyroPID.SetPID(0.05, 0.002, 0.02);
+				gyroPID.SetSetpoint(-60);
+				gyroPID.Enable();
 
 				autoTimer.Reset();
 				autoTimer.Start();
@@ -227,7 +244,10 @@ Drive::AutonomousCommand Drive::Autonomous(AutonomousMode autonomousMode/* Why w
 //				left1.SetEncPosition(0);
 				encoderCountsForGear2 = 2*left1.GetEncPosition();
 
-				command = AutonomousCommand::kSwitchToDrivePID;
+				gyroPID.Reset();
+				gyroPID.SetPID(0.2, 0.04, 0);
+				gyroPID.Enable();
+
 //			} else if (fabs(driveTable->GetNumber("angle",0)-60) < 0.4){
 //				if (!onTarget){
 //					onTarget = true;
@@ -290,81 +310,101 @@ Drive::AutonomousCommand Drive::Autonomous(AutonomousMode autonomousMode/* Why w
 		}
 		break;
 	case kGear3:
-		advanceInches = -64;//inches
-//		turnDistance = 16.75 * 1000 / 3.32; // ~5,045
-
+		advanceInches = /*7ft.*/60*(2)    *0.85 *0.9 *0.95  *1.15   *0.95/**1.05*/;
 		switch (autoState){
-		case kHook:
-			printf("Hook\n");
-			//Todo figure out how to curve archer in autonomous
-			//Chadwick Straight Back (1000, -1030)
-			//1000/sec 900/sec
-//			right1.Set(-515);
-//			left1.Set(700);
+		case kForward:
+			drive.ArcadeDrive(0.85, autoAdjustmentValue);
 
-//			drive.ArcadeDrive(0.65,-0.15);
-			drive.ArcadeDrive(0.65,-0.4);
+//			if (right1.GetEncPosition() < -60*1000/3.32){
+			/* From kBaseline MODIFIED  -- -50,000 --> -43,000*/
+			if (left1.GetEncPosition()*2/* + right1.GetEncPosition()No encoder on Chadwick's right side*/< -advanceInches *1000/3.32){
+				autoState = kTurn;
+				gyroPID.Reset();
+	//			gyroPID.SetPID(0.02, 0.002, 0);
+				gyroPID.SetPID(0.05, 0.002, 0.02);
+				gyroPID.SetSetpoint(60);
+				gyroPID.Enable();
 
-			if (pixyTable->GetNumber("TargetData/targetting_number",0) == 2){
-				autoState = AutoState::kClose;
-				*izone = 0;
-			}
-			break;
-		case kStraight:
-			printf("Straight\n");
-			drive.ArcadeDrive(0.65,0);
-
-			if ((right1.GetEncPosition() - left1.GetEncPosition())/2 < advanceInches * 1000 / 3.32){
-				autoState = AutoState::kTurn;
-				driveTable->PutNumber("RCount",right1.GetEncPosition());
+				autoTimer.Reset();
+				autoTimer.Start();
 			}
 			break;
 		case kTurn:
-			printf("Turn\n");
-			drive.ArcadeDrive(0,pixyTable->GetNumber("TargetData/turnEffort",-0.48));
+			drive.ArcadeDrive(0, autoAdjustmentValue);
 
-//			if (right1.GetEncPosition() > driveTable->GetNumber("RCount",0) + turnDistance){
-			if (pixyTable->GetNumber("TargetData/targetting_number",0) == 2){
-				autoState = AutoState::kWait;
-				autoTimer.Reset();
-				autoTimer.Start();
-				*izone = 0;
-			}
-			break;
-		case kWait:
-			printf("Wait\n");
-			drive.ArcadeDrive(0,0.0);
+//			if (driveTable->GetNumber("angle",0) < -55){
+//			left1.SetEncPosition(0);
+//			if (onTarget && autoTimer.Get() > 0.25){
+			if (Delay(2.5*1.5)){
+				printf("Closing\n");
+				autoState = kClose;
+//				left1.SetEncPosition(0);
+				encoderCountsForGear2 = 2*left1.GetEncPosition();
 
-//			if (pixyTable->GetNumber("TargetData/error",25) < driveTable->GetNumber("TargetTolerance",20)){
-			if (autoTimer.Get() > 2.0){
-				autoState = AutoState::kClose;
+				gyroPID.Reset();
+				gyroPID.SetPID(0.2, 0.04, 0);
+				gyroPID.Enable();
+
+//			} else if (fabs(driveTable->GetNumber("angle",0)-60) < 0.4){
+//				if (!onTarget){
+//					onTarget = true;
+//					autoTimer.Reset();
+//					autoTimer.Start();
+//				}
+//			} else {
+//				autoTimer.Reset();
+//				onTarget = false;
 			}
+
+
 			break;
 		case kClose:
-			printf("Close\n");
-			drive.ArcadeDrive(0.5,autoAdjustmentValue);
+			printf("Driving Straight!\n");
+			drive.ArcadeDrive(0.65, autoAdjustmentValue);
 
-//			if (right1.GetEncPosition() < driveTable->GetNumber("RCount",0) - (35*1000/3.32)) {
-			if (pixyTable->GetNumber("TargetData/measured_distance",300) < pixyTable->GetNumber("TargetData/target_distance_closer",0)){
-				autoState = AutoState::kFinal;
-				driveTable->PutNumber("RCount",right1.GetEncPosition());
+			if (left1.GetEncPosition()*2 - encoderCountsForGear2 < (0.7) * -(120)*1000/3.32){
+				autoState = kDeposit;
+				encoderCountsForGear2 = 2*left1.GetEncPosition();
+
+				command = AutonomousCommand::kOpenWings;
+
+				autoTimer.Reset();
+				autoTimer.Start();
 			}
 			break;
-		case kFinal:
-			printf("Final\n");
-			drive.ArcadeDrive(0.5,0);
+		case kDeposit:
+			drive.ArcadeDrive(0.0,0);
 
-			if (right1.GetEncPosition() < driveTable->GetNumber("RCount",0) - (10*1000/3.32)) {
-				autoState = AutoState::kDone;
+			if (Delay(0.5)){
+				pusher->Set(DoubleSolenoid::kForward);
+				autoState = kDelay;
+			}
+			break;
+		case kDelay:
+			if (Delay(0.5)){
+				autoState = kReverse;
+			}
+			break;
+		case kReverse:
+			drive.ArcadeDrive(-0.5,0);
+
+			if (2*left1.GetEncPosition() - encoderCountsForGear2 > 30*1000/3.32){
+//			if (Delay (1)){
+//				pusher->Set(DoubleSolenoid::kReverse);
+				autoState = kDone;
+				command = AutonomousCommand::kCloseWings;
 			}
 			break;
 		case kDone:
 			drive.ArcadeDrive(0.0,0);
+			printf("Done\n");
+
+			pusher->Set(DoubleSolenoid::kReverse);
 			break;
 		default:
-			printf("Unknown state\n");
+			printf("Unknown Auto State!!\n");
 			break;
-		}//autoState switch
+		}
 		break;
 	case kGyroStraight:
 
@@ -455,7 +495,7 @@ void Drive::Update (Joystick &xbox){
 	if (driveEnabled){
 		if (autoAim.State()){
 			if (!autoAim.PrevState())
-				*izone = 0;
+				gyroPID.Reset();
 
 			drive.ArcadeDrive(moveDeadband.OutputFor(rev*xbox.GetRawAxis(XBox::LY)),
 							autoAdjustmentValue);
@@ -563,6 +603,10 @@ void Drive::GearLights(){
 		gearRed.Set(0);
 	}
 }//GearLights
+
+void Drive::ResetGyro(){
+	gyroPID.Reset();
+}//ResetGyro
 
 void Drive::ReadPIDTable (){
 	if (driveTable){

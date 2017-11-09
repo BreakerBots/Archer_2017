@@ -41,7 +41,6 @@ private:
 	Drive drive;
 	Drive::AutonomousMode autonomousMode;
 	ADXRS450_Gyro gyro;
-	PIDController gyroPID;
 
 	Wings wings;
 //	Slurper slurper;
@@ -61,12 +60,13 @@ public:
 		gearPlacer(0.025,0.0002,0,&aiming,&drive),
 		gearPlacerIZone(100),
 
-		drive(&gearPlacer.m_totalError),
+		gyro(SPI::kOnboardCS0),
+
+		drive(&gyro),
 		autonomousMode(Drive::kGear3),
 
-		gyro(SPI::kOnboardCS0),
 //		gyroPID(0.2,0.04,0,&gyro, &drive),
-		gyroPID(0,0,0,&gyro, &drive),
+//		gyroPID(0,0,0,&gyro, &drive),
 
 		wings (),
 //		slurper (),
@@ -111,8 +111,8 @@ private:
 		printf("Aiming->Drive PIDController Not Enabled\n");
 //		gearPlacer.Enable();
 
-		gyroPID.Enable();
-		gyroPID.InitTable(subsystems->GetSubTable("Drive")->GetSubTable("Gyro"));
+//		gyroPID.Enable();
+//		gyroPID.InitTable(subsystems->GetSubTable("Drive")->GetSubTable("Gyro"));
 
 		//Different than previous PID systems where the setpoint
 		//changes in a stable environment, here, the setpoint is
@@ -136,14 +136,16 @@ private:
 		drive.AutonomousInit(autonomousMode);
 
 		gyro.Reset();
-		gyroPID.SetSetpoint(0);
-		gyroPID.m_totalError = 0;//Clear Accumulated Error
-		gyroPID.Enable();
+//		gyroPID.SetSetpoint(0);
+//		gyroPID.m_totalError = 0;//Clear Accumulated Error
+//		gyroPID.Enable();
 
 		wings.Close();
 		drive.PullGear();
 
 		printf("Done\n");
+
+		Wait(0.2);
 	}//AutonomousInit
 
 	void AutonomousPeriodic(){
@@ -161,6 +163,7 @@ private:
 			wings.Close();
 			break;
 
+/*
 		case Drive::kTurnTo60:
 			gyroPID.Reset();
 			gyroPID.SetSetpoint(-60);
@@ -184,6 +187,7 @@ private:
 			gyroPID.SetSetpoint(-60);
 			gyroPID.Enable();
 			break;
+*/
 
 		default:
 			//No Command
@@ -226,7 +230,8 @@ private:
 	}//Teleop Init
 	void DisabledInit(){
 		printf("Disabled!!!\n");
-		gyroPID.Reset();
+		drive.ResetGyro();
+//		gyroPID.Reset();
 	}//DisabledInit
 
 	void TeleopPeriodic(){
