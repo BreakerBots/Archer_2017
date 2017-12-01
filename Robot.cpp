@@ -1,4 +1,3 @@
-#include <WPILib.h>
 #include <IterativeRobot.h>
 
 #include "I2C.h"
@@ -21,18 +20,6 @@ public:
 		s = "";
 	}
 
-	void RobotInit() {
-	}
-
-	void AutonomousInit() override {
-	}
-
-	void AutonomousPeriodic() {
-	}
-
-	void TeleopInit() {
-	}
-
 	void TeleopPeriodic() {
 		s = "Teleop: ";
 
@@ -50,12 +37,6 @@ public:
 
 
 //		std::cout << std::hex << (unsigned int)(data[1])*256+(unsigned int)(data[0]) << std::endl;
-	}
-
-	void DisabledInit() {
-	}
-
-	void TestPeriodic() {
 	}
 
 };
