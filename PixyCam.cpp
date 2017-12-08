@@ -1,28 +1,28 @@
 #include <PixyCam.h>
 
+#include <chrono>
+#include <iostream>
+
 long GetSystemTime(){
-	return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
+	return std::chrono::duration_cast<std::chrono::milliseconds> (std::chrono::system_clock::now().time_since_epoch()).count();
 }
-
-
-
 
 PixyCam::PixyCam(unsigned int address):
 	m_addr(address),
 	m_bus(I2C::Port::kMXP, address),
 
-	running(false),
-	frame(-1),
-	blocks()
+	m_running(false),
+	m_frame(-1),
+	m_blocks()
 	{}
 
-PixyCam::ReadData(){
+void PixyCam::ReadData(){
 	unsigned char data[2];
 	unsigned int prev_word = 0;
 	unsigned int word;
 
 	int blockNumber = -1;
-	PixyFrame blocks();
+	PixyFrame blocks = PixyFrame();
 
 	while (m_running){
 		//Read 2 bytes form the pixycam bus
@@ -45,28 +45,28 @@ PixyCam::ReadData(){
 				m_blocks = blocks;
 				m_frame++;
 
-				blocks.clear();
+				m_blocks.clear();
 			}
-		} else if (blockNumber = 0){
-			blocks.push_back(PixyObject());
-			blocks.back().checksum = word;
+		} else if (blockNumber == 0){
+			m_blocks.push_back(PixyObject());
+			m_blocks.back().checksum = word;
 			blockNumber++;
-		} else if (blockNumber = 1){
-			blocks.back().sig = word;
+		} else if (blockNumber == 1){
+			m_blocks.back().sig = word;
 			blockNumber++;
-		} else if (blockNumber = 2){
-			blocks.back().x = word;
+		} else if (blockNumber == 2){
+			m_blocks.back().x = word;
 			blockNumber++;
-		} else if (blockNumber = 3){
-			blocks.back().y = word;
+		} else if (blockNumber == 3){
+			m_blocks.back().y = word;
 			blockNumber++;
-		} else if (blockNumber = 4){
-			blocks.back().w = word;
+		} else if (blockNumber == 4){
+			m_blocks.back().w = word;
 			blockNumber++;
-		} else if (blockNumber = 5){
-			blocks.back().h = word;
+		} else if (blockNumber == 5){
+			m_blocks.back().h = word;
 			blockNumber++;
-		} else if (blockNumber = 6){
+		} else if (blockNumber == 6){
 			std::cout << "Read an extra word from the pixy cam: " << word << std::endl;
 		} else {
 			std::cout << "Improperly parsing pixy cam output: " << word << std::endl;

@@ -13,20 +13,20 @@
 #include <unistd.h>
 
 #define PixyFrame std::vector<PixyObject>
+#define START_BLOCK 43605
 
 struct PixyObject {
 	int checksum;
-	int sig,
-	int x, y,
+	int sig;
+	int x, y;
 	int w, h;
 	PixyObject (){
 		checksum = -1;
 		sig = -1;
-		x = 0, y = 0;
+		x = 0, h = 0;
 		w = 1, y = 1;
 	}
 };
-
 
 class PixyCam {
 
@@ -45,7 +45,6 @@ private:
 	bool m_running;
 	int m_frame;
 	PixyFrame m_blocks;
-
 
 };
 
