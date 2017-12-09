@@ -10,6 +10,7 @@
 
 #include "I2C.h"
 #include <chrono>
+#include <thread>
 #include <unistd.h>
 
 #define PixyFrame std::vector<PixyObject>
@@ -31,19 +32,27 @@ struct PixyObject {
 class PixyCam {
 
 public:
-	PixyCam(unsigned int pixycam_address);
+	static void startThread (PixyCam pixy);
 
-private:
+	PixyCam(int address);
+	int frameCount();
+
+	void Start();
+
+//private:
 	//To be looped in a separate thread
 	// Simply reads data from I2C bus
 	void ReadData();
 
 private:
 	unsigned int m_addr;
-	I2C m_bus;
+	I2C *m_bus;
+	std::thread *m_thread;
 
 	bool m_running;
-	int m_frame;
+public:
+	volatile int m_frame;
+private:
 	PixyFrame m_blocks;
 
 };

@@ -3,41 +3,51 @@
 #include "I2C.h"
 #include <chrono>
 #include <unistd.h>
+#include <thread>
 
+#include "PixyCam.h"
 #define PIXY_ADDR 0x54
 
 class Robot: public frc::IterativeRobot {
 private:
-	I2C pixy, falsePixy;
-	std::string s;
 
+	PixyCam pixy;
+//	I2C bus;
 
 public:
 	Robot():
-		pixy(I2C::Port::kMXP, PIXY_ADDR),
-		falsePixy(I2C::Port::kMXP, 0x55)
+		pixy(PIXY_ADDR)
+//		bus(I2C::Port::kMXP, 0x54)
 	{
-		s = "";
+	}
+
+	void TeleopInit() {
+		pixy.Start();
 	}
 
 	void TeleopPeriodic() {
+/*
 		s = "Teleop: ";
 
-		unsigned char data[2];
+*/
+		std::cout << "PixyFrame: " << pixy.frameCount() << std::endl;
+//		pixy.ReadData();
+//		unsigned char data[2];
+//
+//		while (IsEnabled()){
+//			bus.ReadOnly(2, data);
+//			int block = (unsigned int)(data[1])*256+(unsigned int)(data[0]);
+//			std::string s = "Teleop: ";
+//			s += "\n"+std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
+//			s += "\t"+std::to_string(block);
+//			std::cout << s << std::endl;
+//			if (block == 0)
+//				usleep(1000*20);
+//		}
+//		std:: cout << s << std::endl;
+//		std::cout << "Pixy Frame #: " << pixy.frameCount() << std::endl;
 
-		while (IsEnabled()){
-			pixy.ReadOnly(2, data);
-			int block = (unsigned int)(data[1])*256+(unsigned int)(data[0]);
-			s += "\n"+std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
-			s += "\t"+std::to_string(block);
-			if (block == 0)
-				usleep(1000*20);
-		}
-		std:: cout << s << std::endl;
-
-
-//		std::cout << std::hex << (unsigned int)(data[1])*256+(unsigned int)(data[0]) << std::endl;
-	}
+	}//TeleopPeriodic
 
 };
 

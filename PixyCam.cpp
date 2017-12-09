@@ -1,20 +1,37 @@
 #include <PixyCam.h>
 
+#include "I2C.h"
 #include <chrono>
+#include <thread>
 #include <iostream>
 
 long GetSystemTime(){
 	return std::chrono::duration_cast<std::chrono::milliseconds> (std::chrono::system_clock::now().time_since_epoch()).count();
 }
 
-PixyCam::PixyCam(unsigned int address):
-	m_addr(address),
-	m_bus(I2C::Port::kMXP, address),
+PixyCam::PixyCam(int address):
+		m_addr(address),
+		m_bus(new I2C(I2C::Port::kMXP, address)),
+		m_thread(0),
 
-	m_running(false),
-	m_frame(-1),
-	m_blocks()
-	{}
+		m_running(false),
+		m_frame(-1),
+		m_blocks()
+	{
+	}
+
+int PixyCam::frameCount(){
+	return m_frame;
+}//frameCount
+
+void PixyCam::startThread (PixyCam pixy){
+	pixy.ReadData();
+}
+
+void PixyCam::Start (){
+	if (!m_running)
+		m_thread = new std::thread(startThread, *this);
+}
 
 void PixyCam::ReadData(){
 	unsigned char data[2];
@@ -24,14 +41,19 @@ void PixyCam::ReadData(){
 	int blockNumber = -1;
 	PixyFrame blocks = PixyFrame();
 
+	m_running = true;
+
+	std::cout << "Starting Read Loop" << std::endl;
+
 	while (m_running){
 		//Read 2 bytes form the pixycam bus
 			// Pixy word = 256*data[1]+data[0]
-		m_bus.ReadOnly(2, data);
+		m_bus->ReadOnly(2, data);
 
 		//Convert the 2 read bytes into a corresponding decimal integer
 		word = 256*(unsigned int)(data[1]) + (unsigned int)(data[0]);
 
+//		std::cout << GetSystemTime() << "  Word: " << word << std::endl;
 
 		if (0 == word){
 			//Update the frame, it's collection of detected objects
@@ -46,6 +68,7 @@ void PixyCam::ReadData(){
 				m_frame++;
 
 				m_blocks.clear();
+				std::cout << "Frame: " << m_frame << std::endl;
 			}
 		} else if (blockNumber == 0){
 			m_blocks.push_back(PixyObject());
