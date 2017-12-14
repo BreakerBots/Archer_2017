@@ -32,10 +32,11 @@ struct PixyObject {
 class PixyCam {
 
 public:
-	static void startThread (PixyCam pixy);
+	static void startThread (PixyCam& pixy);
 
 	PixyCam(int address);
 	int frameCount();
+	PixyFrame objects();
 
 	void Start();
 

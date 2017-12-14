@@ -30,7 +30,9 @@ public:
 		s = "Teleop: ";
 
 */
-		std::cout << "PixyFrame: " << pixy.frameCount() << std::endl;
+		std::cout << "PixyFrame: " << pixy.frameCount()
+				  << "Object Count: " << pixy.objects().size()
+						 << std::endl;
 //		pixy.ReadData();
 //		unsigned char data[2];
 //

@@ -24,13 +24,18 @@ int PixyCam::frameCount(){
 	return m_frame;
 }//frameCount
 
-void PixyCam::startThread (PixyCam pixy){
+PixyFrame PixyCam::objects(){
+	return m_blocks;
+}
+
+
+void PixyCam::startThread (PixyCam& pixy){
 	pixy.ReadData();
 }
 
 void PixyCam::Start (){
 	if (!m_running)
-		m_thread = new std::thread(startThread, *this);
+		m_thread = new std::thread(startThread, std::ref(*this));
 }
 
 void PixyCam::ReadData(){
