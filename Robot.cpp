@@ -54,6 +54,10 @@ public:
 
 	}//TeleopPeriodic
 
+	void DisabledInit() {
+		pixy.Stop();
+	}
+
 };
 
 START_ROBOT_CLASS(Robot)

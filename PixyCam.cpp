@@ -35,8 +35,22 @@ void PixyCam::startThread (PixyCam& pixy){
 }
 
 void PixyCam::Start (){
-	if (!m_running)
+	if (!m_thread){
+		m_running = true;
 		m_thread = new std::thread(startThread, std::ref(*this));
+	} else {
+		std::cout << "PixyCam: Tried to start with active thread" << std::endl;
+	}
+}
+void PixyCam::Stop (){
+	if (m_thread){
+		m_running = false;
+		std::cout << "PixyCam: Waiting on read thread to stop" << std::endl;
+		m_thread->join();
+		m_thread = 0;
+	} else {
+		std::cout << "PixyCam: No thread to stop" << std::endl;
+	}
 }
 
 void PixyCam::ReadData(){
@@ -51,7 +65,7 @@ void PixyCam::ReadData(){
 
 	std::cout << "Starting Read Loop" << std::endl;
 
-	while (m_running){
+	while (true){
 		//Read 2 bytes form the pixycam bus
 			// Pixy word = 256*data[1]+data[0]
 		m_bus->ReadOnly(2, data);
@@ -66,6 +80,8 @@ void PixyCam::ReadData(){
 //			std::cout << debug << std::endl;
 
 		if (0 == word){
+			std::cout << "PixyCam: No data" << std::endl;
+			if (!m_running) break;
 			//Update the frame, it's collection of detected objects
 			m_blocks = blocks;
 			usleep(1000*20);
@@ -107,4 +123,5 @@ void PixyCam::ReadData(){
 
 		prev_word = word;
 	}//while
+	std::cout << "Thread Stopped" << std::endl;
 }//ReadData

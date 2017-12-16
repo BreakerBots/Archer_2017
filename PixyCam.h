@@ -39,6 +39,7 @@ public:
 	PixyFrame objects();
 
 	void Start();
+	void Stop();
 
 //private:
 	//To be looped in a separate thread
