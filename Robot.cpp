@@ -31,8 +31,11 @@ public:
 
 */
 		std::cout << "PixyFrame: " << pixy.frameCount()
-				  << "Object Count: " << pixy.objects().size()
-						 << std::endl;
+				  << "  Object Count: " << pixy.objects().size();
+		if (pixy.objects().size())
+			std::cout << "  Object Height: " << pixy.objects().front().h;
+		std::cout << std::endl;
+
 //		pixy.ReadData();
 //		unsigned char data[2];
 //

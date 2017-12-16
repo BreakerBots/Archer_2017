@@ -51,6 +51,7 @@ private:
 	std::thread *m_thread;
 
 	bool m_running;
+	std::string debug;
 public:
 	volatile int m_frame;
 private:

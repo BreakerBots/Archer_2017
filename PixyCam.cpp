@@ -15,6 +15,7 @@ PixyCam::PixyCam(int address):
 		m_thread(0),
 
 		m_running(false),
+		debug(""),
 		m_frame(-1),
 		m_blocks()
 	{
@@ -58,7 +59,11 @@ void PixyCam::ReadData(){
 		//Convert the 2 read bytes into a corresponding decimal integer
 		word = 256*(unsigned int)(data[1]) + (unsigned int)(data[0]);
 
-//		std::cout << GetSystemTime() << "  Word: " << word << std::endl;
+//		if (m_frame < 10)
+//			debug += "Frame: " + std::to_string(m_frame) + "  Word: " + std::to_string(word) + '\n';
+////			std::cout << GetSystemTime() << "Frame: " << m_frame << "  Word: " << word << std::endl;
+//		if (m_frame == 10)
+//			std::cout << debug << std::endl;
 
 		if (0 == word){
 			//Update the frame, it's collection of detected objects
@@ -68,31 +73,31 @@ void PixyCam::ReadData(){
 			blockNumber = 0;
 
 			if (START_BLOCK == prev_word){
-				//Update the frame, it's collection of detected objects
+				//Update the frame, its collection of detected objects
 				m_blocks = blocks;
 				m_frame++;
 
-				m_blocks.clear();
+				blocks.clear();
 				std::cout << "Frame: " << m_frame << std::endl;
 			}
 		} else if (blockNumber == 0){
-			m_blocks.push_back(PixyObject());
-			m_blocks.back().checksum = word;
+			blocks.push_back(PixyObject());
+			blocks.back().checksum = word;
 			blockNumber++;
 		} else if (blockNumber == 1){
-			m_blocks.back().sig = word;
+			blocks.back().sig = word;
 			blockNumber++;
 		} else if (blockNumber == 2){
-			m_blocks.back().x = word;
+			blocks.back().x = word;
 			blockNumber++;
 		} else if (blockNumber == 3){
-			m_blocks.back().y = word;
+			blocks.back().y = word;
 			blockNumber++;
 		} else if (blockNumber == 4){
-			m_blocks.back().w = word;
+			blocks.back().w = word;
 			blockNumber++;
 		} else if (blockNumber == 5){
-			m_blocks.back().h = word;
+			blocks.back().h = word;
 			blockNumber++;
 		} else if (blockNumber == 6){
 			std::cout << "Read an extra word from the pixy cam: " << word << std::endl;
