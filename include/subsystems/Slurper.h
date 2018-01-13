@@ -9,7 +9,7 @@
 #define SLURPER_H_
 
 #include "WPILib.h"
-#include <ctre/phoenix/MotorControl/CAN/TalonSRX.h>
+#include <ctre/Phoenix.h>
 
 #include "general/Talons.h"
 #include "general/ToggleButton.h"

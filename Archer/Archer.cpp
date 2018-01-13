@@ -119,7 +119,7 @@ private:
 		//always 0, and BreakerVision returns the error off of that
 		//setpoint
 		gearPlacer.SetSetpoint(0);
-		gearPlacer.InitTable(pixy->GetSubTable("PID"));
+//		gearPlacer.InitTable(pixy->GetSubTable("PID"));
 
 
 #ifdef SHOOTER

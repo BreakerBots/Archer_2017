@@ -40,6 +40,6 @@ void Slurper::Update (Joystick &xbox){
 	else
 		effort = 0;
 
-	talon.Set(effort);
+	talon.Set(ControlMode::PercentOutput, effort);
 }//Update
 

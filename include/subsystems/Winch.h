@@ -9,7 +9,7 @@
 #define WINCH_H_
 
 #include "WPILib.h"
-#include <ctre/phoenix/MotorControl/CAN/WPI_TalonSRX.h>
+#include <ctre/Phoenix.h>
 
 #include "general/XBox.h"
 #include "general/Talons.h"

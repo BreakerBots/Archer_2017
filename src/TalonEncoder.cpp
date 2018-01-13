@@ -9,11 +9,11 @@
 #include "TalonEncoder.h"
 
 
-TalonEncoder::TalonEncoder(CANTalon &readTalon):
+TalonEncoder::TalonEncoder(TalonSRX &readTalon):
 	talon(readTalon)
 {
 }
 
 double TalonEncoder::PIDGet(){
-	return talon.GetEncPosition();
+	return talon.GetSelectedSensorPosition(0);
 }

@@ -5,18 +5,13 @@
  *      Author: DS_2016
  */
 
+#include <ctre/phoenix/MotorControl/ControlMode.h>
 #include <DoubleSolenoid.h>
+#include <general/Talons.h>
 #include <Joystick.h>
 #include <networktables/NetworkTable.h>
 #include <subsystems/drive/Drive.h>
-#include <SmartDashboard/SmartDashboard.h>
 #include <cstdio>
-#include <memory>
-#include <ctre/phoenix/MotorControl/CAN/TalonSRX.h>
-
-#include "general/Talons.h"
-
-#include "subsystems/drive/Drive.h"
 
 namespace frc {
 class ADXRS450_Gyro;
@@ -42,11 +37,9 @@ Drive::Drive (ADXRS450_Gyro* gyro):
 
 	right1(Talons::R1),
 	right2(Talons::R2),
-	right3(Talons::R3),
 
 	left1(Talons::L1),
 	left2(Talons::L2),
-	left3(Talons::L3),
 
 	directionButton(Buttons::kDirectionToggle),
 
@@ -77,11 +70,9 @@ Drive::Drive (ADXRS450_Gyro* gyro):
 	gearsRight = new DoubleSolenoid(50,4,5);
 
 	//----------Talon Management-----------//
-	right2.Set(ControlMode::kFollower, Talons::R1);
-	right3.Set(ControlMode::kFollower, Talons::R1);
+	right2.Set(ControlMode::Follower, Talons::R1);
 
-	left2.Set(ControlMode::kFollower, Talons::R1);
-	left3.Set(ControlMode::kFollower, Talons::R1);
+	left2.Set(ControlMode::Follower, Talons::L1);
 
 	autoTimer.Reset();
 
@@ -109,8 +100,8 @@ void Drive::Init (std::shared_ptr<ITable> nt, std::shared_ptr<NetworkTable> pixy
 	driveTable = nt;
 	pixyTable = pixyNt;
 
-	right1.SetEncPosition(0);
-	left1.SetEncPosition(0);
+	right1.SetSelectedSensorPosition(0, 0, 0);
+	left1.SetSelectedSensorPosition(0, 0, 0);
 
 	ReadPIDTable();
 	WritePIDTable();
@@ -118,7 +109,7 @@ void Drive::Init (std::shared_ptr<ITable> nt, std::shared_ptr<NetworkTable> pixy
 	drive.SetSafetyEnabled(false);
 
 	gyroPID.Enable();
-	gyroPID.InitTable(nt->GetSubTable("Gyro"));
+//	gyroPID.InitTable(nt->GetSubTable("Gyro"));
 
 	autoTimer.Start();
 //	drive.SetMaxOutput(650);
@@ -131,8 +122,8 @@ void Drive::AutonomousInit(AutonomousMode mode){
 //	left1.ConfigPeakOutputVoltage(6,-6);
 //	left1.SetVoltageRampRate(12);
 
-	right1.SetEncPosition(0);
-	left1.SetEncPosition(0);
+	right1.SetSelectedSensorPosition(0, 0, 0);
+	left1.SetSelectedSensorPosition(0, 0, 0);
 
 	autoState = AutoState::kHook;
 
@@ -191,7 +182,7 @@ Drive::AutonomousCommand Drive::Autonomous(AutonomousMode autonomousMode/* Why w
 
 //		advanceInches = 115;
 		advanceInches = 50;
-		if (left1.GetEncPosition()*2/* + right1.GetEncPosition() No Encoder on Chadwick's right side*/ > -advanceInches*1000/3.32){
+		if (left1.GetSelectedSensorPosition(0)*2/* + right1.GetSelectedSensorPosition(0) No Encoder on Chadwick's right side*/ > -advanceInches*1000/3.32){
 			drive.ArcadeDrive(0.4,autoAdjustmentValue);
 //			drive.ArcadeDrive(0.5, autoAdjustmentValue);
 //			*izone = 0;
@@ -205,10 +196,10 @@ Drive::AutonomousCommand Drive::Autonomous(AutonomousMode autonomousMode/* Why w
 	case kGear1:
 
 		advanceInches = -(112-30);
-		if (right1.GetEncPosition() + left1.GetEncPosition() > -10000){
+		if (right1.GetSelectedSensorPosition(0) + left1.GetSelectedSensorPosition(0) > -10000){
 			drive.ArcadeDrive(0.5,0);
 			gyroPID.Reset();
-		} else if (right1.GetEncPosition() + left1.GetEncPosition() > -50000){
+		} else if (right1.GetSelectedSensorPosition(0) + left1.GetSelectedSensorPosition(0) > -50000){
 			drive.ArcadeDrive(0.5,autoAdjustmentValue);
 		} else {
 			drive.ArcadeDrive(0.0,0.0);
@@ -224,7 +215,7 @@ Drive::AutonomousCommand Drive::Autonomous(AutonomousMode autonomousMode/* Why w
 
 //			if (right1.GetEncPosition() < -60*1000/3.32){
 			/* From kBaseline MODIFIED  -- -50,000 --> -43,000*/
-			if (left1.GetEncPosition()*2/* + right1.GetEncPosition()No encoder on Chadwick's right side*/< -advanceInches *1000/3.32){
+			if (left1.GetSelectedSensorPosition(0)*2/* + right1.GetEncPosition()No encoder on Chadwick's right side*/< -advanceInches *1000/3.32){
 				autoState = kTurn;
 				gyroPID.Reset();
 	//			gyroPID.SetPID(0.02, 0.002, 0);
@@ -246,7 +237,7 @@ Drive::AutonomousCommand Drive::Autonomous(AutonomousMode autonomousMode/* Why w
 				printf("Closing\n");
 				autoState = kClose;
 //				left1.SetEncPosition(0);
-				encoderCountsForGear2 = 2*left1.GetEncPosition();
+				encoderCountsForGear2 = 2*left1.GetSelectedSensorPosition(0);
 
 				gyroPID.Reset();
 				gyroPID.SetPID(0.2, 0.04, 0);
@@ -269,9 +260,9 @@ Drive::AutonomousCommand Drive::Autonomous(AutonomousMode autonomousMode/* Why w
 			printf("Driving Straight!\n");
 			drive.ArcadeDrive(0.65, autoAdjustmentValue);
 
-			if (left1.GetEncPosition()*2 - encoderCountsForGear2 < (0.7) * -(120)*1000/3.32){
+			if (left1.GetSelectedSensorPosition(0)*2 - encoderCountsForGear2 < (0.7) * -(120)*1000/3.32){
 				autoState = kDeposit;
-				encoderCountsForGear2 = 2*left1.GetEncPosition();
+				encoderCountsForGear2 = 2*left1.GetSelectedSensorPosition(0);
 
 				command = AutonomousCommand::kOpenWings;
 
@@ -295,7 +286,7 @@ Drive::AutonomousCommand Drive::Autonomous(AutonomousMode autonomousMode/* Why w
 		case kReverse:
 			drive.ArcadeDrive(-0.5,0);
 
-			if (2*left1.GetEncPosition() - encoderCountsForGear2 > 30*1000/3.32){
+			if (2*left1.GetSelectedSensorPosition(0) - encoderCountsForGear2 > 30*1000/3.32){
 //			if (Delay (1)){
 //				pusher->Set(DoubleSolenoid::kReverse);
 				autoState = kDone;
@@ -321,7 +312,7 @@ Drive::AutonomousCommand Drive::Autonomous(AutonomousMode autonomousMode/* Why w
 
 //			if (right1.GetEncPosition() < -60*1000/3.32){
 			/* From kBaseline MODIFIED  -- -50,000 --> -43,000*/
-			if (left1.GetEncPosition()*2/* + right1.GetEncPosition()No encoder on Chadwick's right side*/< -advanceInches *1000/3.32){
+			if (left1.GetSelectedSensorPosition(0)*2/* + right1.GetEncPosition()No encoder on Chadwick's right side*/< -advanceInches *1000/3.32){
 				autoState = kTurn;
 				gyroPID.Reset();
 	//			gyroPID.SetPID(0.02, 0.002, 0);
@@ -343,7 +334,7 @@ Drive::AutonomousCommand Drive::Autonomous(AutonomousMode autonomousMode/* Why w
 				printf("Closing\n");
 				autoState = kClose;
 //				left1.SetEncPosition(0);
-				encoderCountsForGear2 = 2*left1.GetEncPosition();
+				encoderCountsForGear2 = 2*left1.GetSelectedSensorPosition(0);
 
 				gyroPID.Reset();
 				gyroPID.SetPID(0.2, 0.04, 0);
@@ -366,9 +357,9 @@ Drive::AutonomousCommand Drive::Autonomous(AutonomousMode autonomousMode/* Why w
 			printf("Driving Straight!\n");
 			drive.ArcadeDrive(0.65, autoAdjustmentValue);
 
-			if (left1.GetEncPosition()*2 - encoderCountsForGear2 < (0.7) * -(120)*1000/3.32){
+			if (left1.GetSelectedSensorPosition(0)*2 - encoderCountsForGear2 < (0.7) * -(120)*1000/3.32){
 				autoState = kDeposit;
-				encoderCountsForGear2 = 2*left1.GetEncPosition();
+				encoderCountsForGear2 = 2*left1.GetSelectedSensorPosition(0);
 
 				command = AutonomousCommand::kOpenWings;
 
@@ -392,7 +383,7 @@ Drive::AutonomousCommand Drive::Autonomous(AutonomousMode autonomousMode/* Why w
 		case kReverse:
 			drive.ArcadeDrive(-0.5,0);
 
-			if (2*left1.GetEncPosition() - encoderCountsForGear2 > 30*1000/3.32){
+			if (2*left1.GetSelectedSensorPosition(0) - encoderCountsForGear2 > 30*1000/3.32){
 //			if (Delay (1)){
 //				pusher->Set(DoubleSolenoid::kReverse);
 				autoState = kDone;
@@ -422,7 +413,7 @@ Drive::AutonomousCommand Drive::Autonomous(AutonomousMode autonomousMode/* Why w
 //			if (Delay(3)){
 //			if (right1.GetEncPosition() < -60*1000/3.32){
 			/* From kBaseline MODIFIED  -- -50,000 --> -43,000*/
-			if (left1.GetEncPosition()*2/* + right1.GetEncPosition()/*No encoder on Chadwick's right side*/< -advanceInches *1000/3.32){
+			if (left1.GetSelectedSensorPosition(0)*2/* + right1.GetEncPosition()/*No encoder on Chadwick's right side*/< -advanceInches *1000/3.32){
 
 				/*
 				 * -advanceInches(103)*1000/3.32 == -31,024
@@ -454,7 +445,7 @@ Drive::AutonomousCommand Drive::Autonomous(AutonomousMode autonomousMode/* Why w
 		case kReverse:
 			drive.ArcadeDrive(-0.5,0);
 
-			if (left1.GetEncPosition() > -30*1000/3.32){
+			if (left1.GetSelectedSensorPosition(0) > -30*1000/3.32){
 //			if (Delay (1)){
 //				pusher->Set(DoubleSolenoid::kReverse);
 				autoState = kDone;
@@ -614,15 +605,15 @@ void Drive::ResetGyro(){
 
 void Drive::ReadPIDTable (){
 	if (driveTable){
-		left1.SetP(driveTable->GetNumber("PID/Left P",0));
-		left1.SetI(driveTable->GetNumber("PID/Left I",0));
-		left1.SetD(driveTable->GetNumber("PID/Left D",0));
-		left1.SetF(driveTable->GetNumber("PID/Left F",0));
+		left1.Config_kP(0, driveTable->GetNumber("PID/Left P",0), 0);
+		left1.Config_kI(0, driveTable->GetNumber("PID/Left I",0), 0);
+		left1.Config_kD(0, driveTable->GetNumber("PID/Left D",0), 0);
+		left1.Config_kF(0, driveTable->GetNumber("PID/Left F",0), 0);
 
-		right1.SetP(driveTable->GetNumber("PID/Right P",0));
-		right1.SetI(driveTable->GetNumber("PID/Right I",0));
-		right1.SetD(driveTable->GetNumber("PID/Right D",0));
-		right1.SetF(driveTable->GetNumber("PID/Right F",0));
+		right1.Config_kP(0, driveTable->GetNumber("PID/Right P",0), 0);
+		right1.Config_kI(0, driveTable->GetNumber("PID/Right I",0), 0);
+		right1.Config_kD(0, driveTable->GetNumber("PID/Right D",0), 0);
+		right1.Config_kF(0, driveTable->GetNumber("PID/Right F",0), 0);
 	}
 }
 
@@ -690,11 +681,11 @@ void Drive::PostValues (){
 	driveTable->PutNumber("Debug2/0.LeftEffort",left1.Get());
 	driveTable->PutNumber("Debug2/1.RightEffort",right1.Get());
 
-	driveTable->PutNumber("Debug2/2.LeftEncVel",left1.GetEncVel());
-	driveTable->PutNumber("Debug2/3.RightEncVel",right1.GetEncVel());
+	driveTable->PutNumber("Debug2/2.LeftEncVel",left1.GetSelectedSensorVelocity(0));
+	driveTable->PutNumber("Debug2/3.RightEncVel",right1.GetSelectedSensorVelocity(0));
 
-	driveTable->PutNumber("Debug2/4.LeftEncPos",left1.GetEncPosition());
-	driveTable->PutNumber("Debug2/5.RightEncPos",right1.GetEncPosition());
+	driveTable->PutNumber("Debug2/4.LeftEncPos",left1.GetSelectedSensorPosition(0));
+	driveTable->PutNumber("Debug2/5.RightEncPos",right1.GetSelectedSensorPosition(0));
 
 	driveTable->PutNumber("Debug2/6.GearsLeft",gearsLeft->Get());
 	driveTable->PutNumber("Debug2/7.GearsRight",gearsRight->Get());

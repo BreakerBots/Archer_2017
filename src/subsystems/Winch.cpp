@@ -12,6 +12,7 @@
 #include "general/Deadband.h"
 
 #include "subsystems/Winch.h"
+#include <ctre/Phoenix.h>
 
 Winch::Winch ():
 	talon (Talons::WINCH),
@@ -26,7 +27,7 @@ void Winch::Update (const Joystick &xbox){
 	float effort = deadband.OutputFor(xbox.GetRawAxis(joyTrigger));
 
 
-	talon.Set(effort);
+	talon.Set(ControlMode::PercentOutput, effort);
 	if (effort != 0)
 		printf("Winch current draw: %.4f\n",talon.GetOutputCurrent());
 

@@ -8,16 +8,17 @@
 #ifndef SRC_DRIVE_H_
 #define SRC_DRIVE_H_
 
+#include <WPILib.h>
+#include <ctre/Phoenix.h>
+
 #include <general/Deadband.h>
 #include <general/HoldButton.h>
 #include <general/ToggleButton.h>
 #include <general/XBox.h>
 #include <PIDController.h>
-#include <PIDOutput.h>
 #include <RobotDrive.h>
 #include <Timer.h>
 #include <memory>
-#include <ctre/Phoenix.h>
 
 namespace frc {
 class ADXRS450_Gyro;
@@ -73,19 +74,17 @@ private:
 	ToggleButton gearButton;
 	WPI_TalonSRX gearRed;
 
-		//3-talon drive for the right side
+		//2-talon drive for the right side
 	WPI_TalonSRX right1;
 	WPI_TalonSRX right2;
-	WPI_TalonSRX right3;
-		//3-talon drive for the left side
+		//2-talon drive for the left side
 	WPI_TalonSRX left1;
 	WPI_TalonSRX left2;
-	WPI_TalonSRX left3;
 
 	ToggleButton directionButton;
 
 		//WPILib control function (ArcadeDrive(float moveVal, float turnVal)
-	RobotDrive drive;
+	DifferentialDrive drive;
 
 		//Deadband Functions
 	Deadband moveDeadband;
