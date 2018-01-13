@@ -8,6 +8,8 @@
 #ifndef SRC_BREAKERVISION_H_
 #define SRC_BREAKERVISION_H_
 
+#include <tables/ITableListener.h>
+
 class BreakerVision: public PIDSource, ITableListener{
 public:
 	typedef std::vector<double> PixyObjectData;

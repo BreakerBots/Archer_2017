@@ -1,21 +1,21 @@
-#include <WPILib.h>
-#include <ctrlib/CANTalon.h>
-
-#include <algorithm>
-
-#include "general/XBox.h"
-#include "general/Talons.h"
-
-#include "general/ToggleButton.h"
-
-#include "subsystems/drive/BreakerVision.h"
-#include "subsystems/drive/Drive.h"
-
-#include "subsystems/Wings.h"
-#include "subsystems/Winch.h"
-#include "subsystems/Slurper.h"
-
-#include "subsystems/shooter/Shooter.h"
+#include <ADXRS450_Gyro.h>
+#include <cscore_oo.h>
+#include <CameraServer.h>
+#include <general/XBox.h>
+#include <IterativeRobot.h>
+#include <Joystick.h>
+#include <networktables/NetworkTable.h>
+#include <PIDController.h>
+#include <RobotBase.h>
+#include <subsystems/drive/BreakerVision.h>
+#include <subsystems/drive/Drive.h>
+#include <subsystems/Winch.h>
+#include <subsystems/Wings.h>
+#include <SmartDashboard/SmartDashboard.h>
+#include <SPI.h>
+#include <Timer.h>
+#include <cstdio>
+#include <memory>
 
 
 //#define SHOOTER

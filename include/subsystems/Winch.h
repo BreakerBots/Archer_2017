@@ -9,7 +9,7 @@
 #define WINCH_H_
 
 #include "WPILib.h"
-#include "ctrlib/CANTalon.h"
+#include <ctre/phoenix/MotorControl/CAN/WPI_TalonSRX.h>
 
 #include "general/XBox.h"
 #include "general/Talons.h"
@@ -26,7 +26,7 @@ public:
 
 private:
 
-	CANTalon talon;
+	TalonSRX talon;
 	int joyTrigger;
 
 	Deadband deadband;

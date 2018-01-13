@@ -9,13 +9,14 @@
 #define VELOCITYCONTROLLER_H_
 
 #include "WPILib.h"
-#include "ctrlib/CANTalon.h"
+#include <ctre/phoenix/MotorControl/CAN/TalonSRX.h>
+#include <tables/ITableListener.h>
 
 class VelocityController : public ITableListener{
 
 private:
 
-	CANTalon talon;
+	TalonSRX talon;
 	float speed;
 
 	std::shared_ptr<ITable> table;

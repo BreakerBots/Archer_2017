@@ -8,15 +8,15 @@
 #ifndef TALONENCODER_H_
 #define TALONENCODER_H_
 
-#include "WPILib.h"
-#include "ctrlib/CANTalon.h"
+#include <PIDSource.h>
+#include <ctre/Phoenix.h>
 
 class TalonEncoder : public PIDSource {
 private:
-	CANTalon &talon;
+	TalonSRX &talon;
 
 public:
-	TalonEncoder (CANTalon &readTalon);
+	TalonEncoder (TalonSRX &readTalon);
 
 	double PIDGet();
 };

@@ -6,7 +6,7 @@
  */
 
 #include "WPILib.h"
-#include "ctrlib/CANTalon.h"
+#include <ctre/phoenix/MotorControl/CAN/TalonSRX.h>
 
 #include "VelocityController.h"
 
@@ -25,8 +25,7 @@ VelocityController::VelocityController(int talon_id, float p, float i, float d, 
 
 void VelocityController::Initialize(float pGain, float iGain, float dGain, float feedForward, float izone){
 
-	talon.SetControlMode(CANTalon::kSpeed);
-	talon.Set(0);
+	talon.Set(ControlMode::kSpeed, 0);
 
 	talon.SetPID(pGain, iGain, dGain, feedForward);
 

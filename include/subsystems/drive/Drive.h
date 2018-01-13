@@ -8,14 +8,22 @@
 #ifndef SRC_DRIVE_H_
 #define SRC_DRIVE_H_
 
-#include "WPILib.h"
-#include "ctrlib/CANTalon.h"
+#include <general/Deadband.h>
+#include <general/HoldButton.h>
+#include <general/ToggleButton.h>
+#include <general/XBox.h>
+#include <PIDController.h>
+#include <PIDOutput.h>
+#include <RobotDrive.h>
+#include <Timer.h>
+#include <memory>
+#include <ctre/Phoenix.h>
 
-#include "general/XBox.h"
-#include "general/Talons.h"
-#include "general/Deadband.h"
-#include "general/ToggleButton.h"
-#include "general/HoldButton.h"
+namespace frc {
+class ADXRS450_Gyro;
+class DoubleSolenoid;
+class Joystick;
+} /* namespace frc */
 
 class Drive : public PIDOutput
 {
@@ -63,17 +71,16 @@ private:
 	DoubleSolenoid* gearsLeft;
 	DoubleSolenoid* gearsRight;
 	ToggleButton gearButton;
-	CANTalon gearRed;
-
+	WPI_TalonSRX gearRed;
 
 		//3-talon drive for the right side
-	CANTalon right1;
-	CANTalon right2;
-	CANTalon right3;
+	WPI_TalonSRX right1;
+	WPI_TalonSRX right2;
+	WPI_TalonSRX right3;
 		//3-talon drive for the left side
-	CANTalon left1;
-	CANTalon left2;
-	CANTalon left3;
+	WPI_TalonSRX left1;
+	WPI_TalonSRX left2;
+	WPI_TalonSRX left3;
 
 	ToggleButton directionButton;
 

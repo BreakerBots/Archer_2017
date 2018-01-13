@@ -5,15 +5,22 @@
  *      Author: DS_2016
  */
 
-#include "WPILib.h"
+#include <DoubleSolenoid.h>
+#include <Joystick.h>
+#include <networktables/NetworkTable.h>
+#include <subsystems/drive/Drive.h>
+#include <SmartDashboard/SmartDashboard.h>
+#include <cstdio>
+#include <memory>
+#include <ctre/phoenix/MotorControl/CAN/TalonSRX.h>
 
-#include "general/XBox.h"
 #include "general/Talons.h"
-#include "ctrlib/CANTalon.h"
-
-#include "ADXRS450_Gyro.h"
 
 #include "subsystems/drive/Drive.h"
+
+namespace frc {
+class ADXRS450_Gyro;
+} /* namespace frc */
 
 /*
  * Drive.h
@@ -60,6 +67,7 @@ Drive::Drive (ADXRS450_Gyro* gyro):
 
 	autoState(Drive::AutoState::kStraight),
 	autoTimer()
+
 {
 	//Start in reverse
 	directionButton.Override(!directionButton.State());
@@ -68,17 +76,12 @@ Drive::Drive (ADXRS450_Gyro* gyro):
 	gearsLeft = new DoubleSolenoid(50,0,1);
 	gearsRight = new DoubleSolenoid(50,4,5);
 
-
 	//----------Talon Management-----------//
-	right2.SetControlMode(CANTalon::kFollower);
-	right2.Set(Talons::R1);
-	right3.SetControlMode(CANTalon::kFollower);
-	right3.Set(Talons::R1);
+	right2.Set(ControlMode::kFollower, Talons::R1);
+	right3.Set(ControlMode::kFollower, Talons::R1);
 
-	left2.SetControlMode(CANTalon::kFollower);
-	left2.Set(Talons::L1);
-	left3.SetControlMode(CANTalon::kFollower);
-	left3.Set(Talons::L1);
+	left2.Set(ControlMode::kFollower, Talons::R1);
+	left3.Set(ControlMode::kFollower, Talons::R1);
 
 	autoTimer.Reset();
 

@@ -9,7 +9,7 @@
 #define SLURPER_H_
 
 #include "WPILib.h"
-#include "ctrlib/CANTalon.h"
+#include <ctre/phoenix/MotorControl/CAN/TalonSRX.h>
 
 #include "general/Talons.h"
 #include "general/ToggleButton.h"
@@ -22,7 +22,7 @@ private:
 //		,kReverseHold = XBox::
 	};
 
-	CANTalon talon;
+	TalonSRX talon;
 
 	ToggleButton enableButton;
 	float intakeEffort;
